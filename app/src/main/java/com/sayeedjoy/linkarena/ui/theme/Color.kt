@@ -1,4 +1,4 @@
-package com.sayeedjoy.linkarena
+package com.sayeedjoy.linkarena.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

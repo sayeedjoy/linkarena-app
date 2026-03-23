@@ -1,7 +1,7 @@
 // Generated using MaterialKolor Builder version 1.3.0 (103)
 // https://materialkolor.com/?color_seed=FF1E90FF&dark_mode=true&style=Neutral&package_name=com.sayeedjoy.linkarena
 
-package com.sayeedjoy.linkarena
+package com.sayeedjoy.linkarena.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
