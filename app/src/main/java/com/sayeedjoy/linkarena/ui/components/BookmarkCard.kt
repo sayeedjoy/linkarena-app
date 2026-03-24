@@ -46,6 +46,7 @@ fun BookmarkCard(
     bookmark: Bookmark,
     onClick: () -> Unit,
     onRefetch: () -> Unit,
+    onFaviconResolved: (String) -> Unit,
     onGroupSelect: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -56,6 +57,9 @@ fun BookmarkCard(
     var showMenu by remember { mutableStateOf(false) }
     val faviconSize = 24.dp
     val colorScheme = MaterialTheme.colorScheme
+    var hasReportedResolvedFavicon by remember(bookmark.id, bookmark.faviconUrl) {
+        mutableStateOf(!bookmark.faviconUrl.isNullOrBlank())
+    }
 
     Card(
         modifier = modifier
@@ -97,6 +101,12 @@ fun BookmarkCard(
                         modifier = Modifier.size(faviconSize),
                         contentScale = ContentScale.Fit,
                         filterQuality = FilterQuality.High,
+                        onSuccess = {
+                            if (!hasReportedResolvedFavicon && bookmark.faviconUrl != iconUrl) {
+                                hasReportedResolvedFavicon = true
+                                onFaviconResolved(iconUrl)
+                            }
+                        },
                         onError = {
                             if (faviconIndex < faviconCandidates.lastIndex) {
                                 faviconIndex += 1

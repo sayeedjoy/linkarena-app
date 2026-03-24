@@ -96,8 +96,11 @@ class GroupRepositoryImpl @Inject constructor(
                 }
 
                 val groups = groupDtos.map { it.toDomain().toEntity() }
-                groupDao.deleteAll()
-                groupDao.insertAll(groups)
+                val remoteGroups = groups.sortedBy { it.id }
+                val localGroups = groupDao.getAllGroupsSnapshot().sortedBy { it.id }
+                if (remoteGroups != localGroups) {
+                    groupDao.replaceAll(remoteGroups)
+                }
                 NetworkResult.Success(Unit)
             } else {
                 NetworkResult.Error("Sync failed")

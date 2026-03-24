@@ -108,6 +108,11 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun cacheBookmarkFavicon(bookmarkId: String, faviconUrl: String) {
+        if (faviconUrl.isBlank()) return
+        bookmarkDao.updateFaviconUrl(bookmarkId, faviconUrl)
+    }
+
     override suspend fun syncBookmarks(): NetworkResult<Unit> {
         return try {
             val initialResponse = api.sync(mode = "initial")
@@ -146,11 +151,18 @@ class BookmarkRepositoryImpl @Inject constructor(
                 }
             }
 
-            // Replace local snapshot so deletions performed from other clients are reflected.
-            bookmarkDao.deleteAll()
-            bookmarkDao.insertAll(allBookmarks)
-            groupDao.deleteAll()
-            groupDao.insertAll(allGroups.distinctBy { it.id })
+            val remoteBookmarks = allBookmarks.sortedBy { it.id }
+            val localBookmarks = bookmarkDao.getAllBookmarksSnapshot().sortedBy { it.id }
+            if (remoteBookmarks != localBookmarks) {
+                // Replace local snapshot atomically to avoid transient empty-list emissions.
+                bookmarkDao.replaceAll(allBookmarks)
+            }
+
+            val remoteGroups = allGroups.distinctBy { it.id }.sortedBy { it.id }
+            val localGroups = groupDao.getAllGroupsSnapshot().sortedBy { it.id }
+            if (remoteGroups != localGroups) {
+                groupDao.replaceAll(remoteGroups)
+            }
 
             NetworkResult.Success(Unit)
         } catch (e: Exception) {

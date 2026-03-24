@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.domain.model.Group
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CacheBookmarkFaviconUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.DeleteBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.GetBookmarksUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.MoveBookmarkToGroupUseCase
@@ -19,7 +20,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 data class HomeUiState(
     val bookmarks: List<Bookmark> = emptyList(),
@@ -37,16 +41,22 @@ class HomeViewModel @Inject constructor(
     private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
     private val moveBookmarkToGroupUseCase: MoveBookmarkToGroupUseCase,
     private val refetchBookmarkUseCase: RefetchBookmarkUseCase,
+    private val cacheBookmarkFaviconUseCase: CacheBookmarkFaviconUseCase,
     private val syncBookmarksUseCase: SyncBookmarksUseCase,
     private val getGroupsUseCase: GetGroupsUseCase,
     private val syncGroupsUseCase: SyncGroupsUseCase
 ) : ViewModel() {
+    private companion object {
+        val MIN_AUTO_REVALIDATE_GAP_MS = 10.seconds.inWholeMilliseconds
+    }
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     private val _selectedGroupId = MutableStateFlow<String?>(null)
+    private val syncMutex = Mutex()
+    private var lastSyncAttemptAtMs: Long = 0L
 
     init {
         loadData()
@@ -56,28 +66,7 @@ class HomeViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            when (val result = syncBookmarksUseCase()) {
-                is NetworkResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = result.message
-                    )
-                }
-                else -> {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = null
-                    )
-                }
-            }
-
-            when (val result = syncGroupsUseCase()) {
-                is NetworkResult.Error -> {
-                    _uiState.value = _uiState.value.copy(error = result.message)
-                }
-                else -> {}
-            }
+            syncData(showLoading = true, showRefreshing = false, force = true)
         }
     }
 
@@ -119,20 +108,13 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
-            when (val result = syncBookmarksUseCase()) {
-                is NetworkResult.Error -> {
-                    _uiState.value = _uiState.value.copy(error = result.message)
-                }
-                else -> {}
-            }
-            when (val result = syncGroupsUseCase()) {
-                is NetworkResult.Error -> {
-                    _uiState.value = _uiState.value.copy(error = result.message)
-                }
-                else -> {}
-            }
-            _uiState.value = _uiState.value.copy(isRefreshing = false)
+            syncData(showLoading = false, showRefreshing = true, force = true)
+        }
+    }
+
+    fun revalidate() {
+        viewModelScope.launch {
+            syncData(showLoading = false, showRefreshing = false, force = false)
         }
     }
 
@@ -169,7 +151,52 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun cacheBookmarkFavicon(bookmarkId: String, faviconUrl: String) {
+        viewModelScope.launch {
+            cacheBookmarkFaviconUseCase(bookmarkId, faviconUrl)
+        }
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    private suspend fun syncData(
+        showLoading: Boolean,
+        showRefreshing: Boolean,
+        force: Boolean
+    ) {
+        syncMutex.withLock {
+            val now = System.currentTimeMillis()
+            if (!force && (now - lastSyncAttemptAtMs) < MIN_AUTO_REVALIDATE_GAP_MS) {
+                return
+            }
+            lastSyncAttemptAtMs = now
+
+            if (showLoading) {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            }
+            if (showRefreshing) {
+                _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
+            }
+
+            var latestError: String? = null
+            when (val result = syncBookmarksUseCase()) {
+                is NetworkResult.Error -> latestError = result.message
+                else -> {}
+            }
+            when (val result = syncGroupsUseCase()) {
+                is NetworkResult.Error -> latestError = result.message
+                else -> {}
+            }
+
+            if (showLoading) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = latestError)
+            } else if (showRefreshing) {
+                _uiState.value = _uiState.value.copy(isRefreshing = false, error = latestError)
+            } else if (latestError != null) {
+                _uiState.value = _uiState.value.copy(error = latestError)
+            }
+        }
     }
 }

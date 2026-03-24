@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -36,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +53,9 @@ import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.ErrorMessage
 import com.sayeedjoy.linkarena.ui.components.GroupChip
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,12 +66,21 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    val autoRevalidateIntervalMs = 30.seconds.inWholeMilliseconds
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedBookmarkIds by remember { mutableStateOf(setOf<String>()) }
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
     var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
+    val bookmarkListState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            delay(autoRevalidateIntervalMs)
+            viewModel.revalidate()
+        }
+    }
 
     if (showBulkDeleteDialog) {
         AlertDialog(
@@ -239,9 +253,6 @@ fun HomeScreen(
 
             // Content
             when {
-                uiState.isLoading -> {
-                    LoadingIndicator()
-                }
                 uiState.bookmarks.isNotEmpty() -> {
                     PullToRefreshBox(
                         isRefreshing = uiState.isRefreshing,
@@ -249,6 +260,7 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         LazyColumn(
+                            state = bookmarkListState,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -284,6 +296,12 @@ fun HomeScreen(
                                         }
                                     },
                                     onRefetch = { viewModel.refetchBookmark(bookmark.id) },
+                                    onFaviconResolved = { resolvedFaviconUrl ->
+                                        viewModel.cacheBookmarkFavicon(
+                                            bookmarkId = bookmark.id,
+                                            faviconUrl = resolvedFaviconUrl
+                                        )
+                                    },
                                     onGroupSelect = {
                                         isSelectionMode = true
                                         selectedBookmarkIds = setOf(bookmark.id)
@@ -296,6 +314,9 @@ fun HomeScreen(
                             }
                         }
                     }
+                }
+                uiState.isLoading -> {
+                    LoadingIndicator()
                 }
                 uiState.error != null -> {
                     ErrorMessage(

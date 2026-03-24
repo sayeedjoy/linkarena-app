@@ -6,6 +6,7 @@ import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.domain.usecase.auth.LoginUseCase
 import com.sayeedjoy.linkarena.domain.usecase.auth.LogoutUseCase
 import com.sayeedjoy.linkarena.domain.usecase.auth.SignupUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CacheBookmarkFaviconUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CreateBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.DeleteBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.GetBookmarksUseCase
@@ -56,6 +57,12 @@ object UseCaseModule {
     @ViewModelScoped
     fun provideCreateBookmarkUseCase(bookmarkRepository: BookmarkRepository): CreateBookmarkUseCase {
         return CreateBookmarkUseCase(bookmarkRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideCacheBookmarkFaviconUseCase(bookmarkRepository: BookmarkRepository): CacheBookmarkFaviconUseCase {
+        return CacheBookmarkFaviconUseCase(bookmarkRepository)
     }
 
     @Provides

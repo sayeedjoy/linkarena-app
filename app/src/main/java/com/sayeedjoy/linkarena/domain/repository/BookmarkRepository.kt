@@ -13,5 +13,6 @@ interface BookmarkRepository {
     suspend fun updateBookmark(url: String, title: String?, description: String?, groupId: String?): NetworkResult<Bookmark>
     suspend fun deleteBookmark(id: String): NetworkResult<Unit>
     suspend fun moveBookmarkToGroup(bookmarkId: String, groupId: String?): NetworkResult<Unit>
+    suspend fun cacheBookmarkFavicon(bookmarkId: String, faviconUrl: String)
     suspend fun syncBookmarks(): NetworkResult<Unit>
 }
