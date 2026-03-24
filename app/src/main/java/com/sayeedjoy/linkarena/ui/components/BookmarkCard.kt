@@ -60,6 +60,7 @@ fun BookmarkCard(
     var showMenu by remember { mutableStateOf(false) }
     val faviconSize = 24.dp
     val colorScheme = MaterialTheme.colorScheme
+    val cardShape = RoundedCornerShape(24.dp)
     var hasReportedResolvedFavicon by remember(bookmark.id, bookmark.faviconUrl) {
         mutableStateOf(!bookmark.faviconUrl.isNullOrBlank())
     }
@@ -67,8 +68,9 @@ fun BookmarkCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .clip(cardShape)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp), // matched rounded-3xl
+        shape = cardShape, // matched rounded-3xl
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerHighest)
     ) {

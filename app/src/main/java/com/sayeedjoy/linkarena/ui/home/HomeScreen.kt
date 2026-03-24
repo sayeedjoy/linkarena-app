@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -175,7 +174,7 @@ fun HomeScreen(
                         Text("${selectedBookmarkIds.size} selected")
                     } else {
                         Text(
-                            text = "Digital Curator",
+                            text = "LinkArena",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
                             color = MaterialTheme.colorScheme.primary
@@ -214,13 +213,6 @@ fun HomeScreen(
                             )
                         }
                     } else {
-                        IconButton(onClick = { /* TODO: Header search action */ }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
                         androidx.compose.foundation.layout.Box(
                             modifier = Modifier
                                 .padding(end = 16.dp, start = 8.dp)
@@ -278,13 +270,6 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                     ) 
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 },
                 singleLine = true,
                 shape = androidx.compose.foundation.shape.CircleShape,
