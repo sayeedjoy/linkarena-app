@@ -13,10 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
+import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.navigation.AuthNavGraph
 import com.sayeedjoy.linkarena.ui.navigation.MainNavGraph
 import com.sayeedjoy.linkarena.ui.theme.LinkArenaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -44,17 +46,23 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LinkArenaApp(authRepository: AuthRepository) {
     val navController = rememberNavController()
-    val isLoggedIn by authRepository.isLoggedIn.collectAsState(initial = false)
+    val isLoggedIn by authRepository.isLoggedIn
+        .map<Boolean, Boolean?> { it }
+        .collectAsState(initial = null)
 
-    if (isLoggedIn) {
-        MainNavGraph(
-            navController = navController,
-            onLogout = {}
-        )
-    } else {
-        AuthNavGraph(
-            navController = navController,
-            onAuthSuccess = {}
-        )
+    when (isLoggedIn) {
+        null -> LoadingIndicator()
+        true -> {
+            MainNavGraph(
+                navController = navController,
+                onLogout = {}
+            )
+        }
+        false -> {
+            AuthNavGraph(
+                navController = navController,
+                onAuthSuccess = {}
+            )
+        }
     }
 }

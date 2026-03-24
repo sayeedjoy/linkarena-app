@@ -6,11 +6,17 @@ import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.DeleteBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.GetBookmarksUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.MoveBookmarkToGroupUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.RefetchBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.SyncBookmarksUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +34,8 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val getBookmarksUseCase: GetBookmarksUseCase,
     private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
+    private val moveBookmarkToGroupUseCase: MoveBookmarkToGroupUseCase,
+    private val refetchBookmarkUseCase: RefetchBookmarkUseCase,
     private val syncBookmarksUseCase: SyncBookmarksUseCase,
     private val getGroupsUseCase: GetGroupsUseCase
 ) : ViewModel() {
@@ -113,6 +121,28 @@ class HomeViewModel @Inject constructor(
     fun deleteBookmark(id: String) {
         viewModelScope.launch {
             when (val result = deleteBookmarkUseCase(id)) {
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun moveBookmarkToGroup(bookmarkId: String, groupId: String?) {
+        viewModelScope.launch {
+            when (val result = moveBookmarkToGroupUseCase(bookmarkId, groupId)) {
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun refetchBookmark(bookmarkId: String) {
+        viewModelScope.launch {
+            when (val result = refetchBookmarkUseCase(bookmarkId)) {
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(error = result.message)
                 }

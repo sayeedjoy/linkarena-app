@@ -6,8 +6,17 @@ import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.domain.usecase.auth.LoginUseCase
 import com.sayeedjoy.linkarena.domain.usecase.auth.LogoutUseCase
 import com.sayeedjoy.linkarena.domain.usecase.auth.SignupUseCase
-import com.sayeedjoy.linkarena.domain.usecase.bookmarks.*
-import com.sayeedjoy.linkarena.domain.usecase.groups.*
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CreateBookmarkUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.DeleteBookmarkUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.GetBookmarksUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.MoveBookmarkToGroupUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.RefetchBookmarkUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.SyncBookmarksUseCase
+import com.sayeedjoy.linkarena.domain.usecase.bookmarks.UpdateBookmarkUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.CreateGroupUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.DeleteGroupUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.UpdateGroupUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -58,6 +67,18 @@ object UseCaseModule {
     @ViewModelScoped
     fun provideDeleteBookmarkUseCase(bookmarkRepository: BookmarkRepository): DeleteBookmarkUseCase {
         return DeleteBookmarkUseCase(bookmarkRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideMoveBookmarkToGroupUseCase(bookmarkRepository: BookmarkRepository): MoveBookmarkToGroupUseCase {
+        return MoveBookmarkToGroupUseCase(bookmarkRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideRefetchBookmarkUseCase(bookmarkRepository: BookmarkRepository): RefetchBookmarkUseCase {
+        return RefetchBookmarkUseCase(bookmarkRepository)
     }
 
     @Provides
