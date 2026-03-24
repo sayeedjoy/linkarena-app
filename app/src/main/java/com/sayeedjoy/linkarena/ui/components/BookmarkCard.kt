@@ -1,11 +1,14 @@
 package com.sayeedjoy.linkarena.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,107 +68,118 @@ fun BookmarkCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp), // matched rounded-3xl
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerLow)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerHighest)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp) // generous padding
         ) {
-            // Favicon
-            Box(
-                modifier = Modifier.size(faviconSize),
-                contentAlignment = Alignment.Center
+            // Header Row: Icon, Title/URL, More button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
             ) {
-                val faviconCandidates = remember(bookmark.faviconUrl, bookmark.url) {
-                    val domain = bookmark.url?.extractDomain()
-                    buildList {
-                        bookmark.faviconUrl
-                            ?.resolveAgainstBookmarkUrl(bookmark.url)
-                            ?.let { add(it) }
-                        domain?.let { add("https://www.google.com/s2/favicons?domain=$it&sz=64") }
-                        domain?.let { add("https://icons.duckduckgo.com/ip3/$it.ico") }
-                    }.distinct()
-                }
-                var faviconIndex by remember(bookmark.id, faviconCandidates) { mutableStateOf(0) }
-                val iconUrl = faviconCandidates.getOrNull(faviconIndex)
+                // Favicon box
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(color = colorScheme.surfaceContainerLow, shape = RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val faviconCandidates = remember(bookmark.faviconUrl, bookmark.url) {
+                        val domain = bookmark.url?.extractDomain()
+                        buildList {
+                            bookmark.faviconUrl
+                                ?.resolveAgainstBookmarkUrl(bookmark.url)
+                                ?.let { add(it) }
+                            domain?.let { add("https://www.google.com/s2/favicons?domain=$it&sz=64") }
+                            domain?.let { add("https://icons.duckduckgo.com/ip3/$it.ico") }
+                        }.distinct()
+                    }
+                    var faviconIndex by remember(bookmark.id, faviconCandidates) { mutableStateOf(0) }
+                    val iconUrl = faviconCandidates.getOrNull(faviconIndex)
 
-                if (iconUrl != null) {
-                    AsyncImage(
-                        model = iconUrl,
-                        contentDescription = null,
-                        modifier = Modifier.size(faviconSize),
-                        contentScale = ContentScale.Fit,
-                        filterQuality = FilterQuality.High,
-                        onSuccess = {
-                            if (!hasReportedResolvedFavicon && bookmark.faviconUrl != iconUrl) {
-                                hasReportedResolvedFavicon = true
-                                onFaviconResolved(iconUrl)
+                    if (iconUrl != null) {
+                        AsyncImage(
+                            model = iconUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop,
+                            filterQuality = FilterQuality.High,
+                            onSuccess = {
+                                if (!hasReportedResolvedFavicon && bookmark.faviconUrl != iconUrl) {
+                                    hasReportedResolvedFavicon = true
+                                    onFaviconResolved(iconUrl)
+                                }
+                            },
+                            onError = {
+                                if (faviconIndex < faviconCandidates.lastIndex) {
+                                    faviconIndex += 1
+                                }
                             }
-                        },
-                        onError = {
-                            if (faviconIndex < faviconCandidates.lastIndex) {
-                                faviconIndex += 1
-                            }
-                        }
-                    )
-                } else {
-                    Text(
-                        text = bookmark.title?.firstOrNull()?.uppercase() ?: "?",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                        )
+                    } else {
+                        // Fallback icon
+                        Icon(
+                            imageVector = Icons.Default.Edit, // matching the pen icon fallback from the image
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-            // Content
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = bookmark.title ?: bookmark.url ?: "No title",
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (bookmark.description != null) {
+                // Title and URL
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(top = 2.dp)
+                ) {
                     Text(
-                        text = bookmark.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                bookmark.url?.let { url ->
-                    Text(
-                        text = url.extractDomain() ?: url,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        text = bookmark.title ?: bookmark.url ?: "No title",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                }
-            }
-
-            if (isSelectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick() }
-                )
-            } else {
-                // Menu
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options"
+                    bookmark.url?.let { url ->
+                        Text(
+                            text = url.extractDomain() ?: url,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+                }
+
+                if (isSelectionMode) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = { onClick() },
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                } else {
+                    // Menu
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false },
@@ -236,9 +251,29 @@ fun BookmarkCard(
                                 )
                             }
                         )
+                        }
                     }
                 }
             }
+
+            // Description
+            if (bookmark.description != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = bookmark.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = androidx.compose.ui.unit.TextUnit(20f, androidx.compose.ui.unit.TextUnitType.Sp),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            
+            // Note: If tags/groups properties are added to Bookmark, they would be rendered here
+            // using a simple row of text with background. Since `Bookmark` model might not have
+            // them yet, we'll wait for the model to include them. (Currently the screenshot shows "INSPO", "DESIGN" etc.)
+            
+            // Optionally, we could display the URL as a pill if needed, but we already have it at the top.
         }
     }
 }

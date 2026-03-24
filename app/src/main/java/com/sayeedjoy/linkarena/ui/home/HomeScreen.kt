@@ -8,6 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -25,10 +28,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +52,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -170,7 +174,12 @@ fun HomeScreen(
                     if (isSelectionMode) {
                         Text("${selectedBookmarkIds.size} selected")
                     } else {
-                        Text("LinkArena")
+                        Text(
+                            text = "Digital Curator",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -202,6 +211,33 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close selection"
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = { /* TODO: Header search action */ }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        androidx.compose.foundation.layout.Box(
+                            modifier = Modifier
+                                .padding(end = 16.dp, start = 8.dp)
+                                .size(40.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(
+                                    2.dp,
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                    androidx.compose.foundation.shape.CircleShape
+                                ),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Person,
+                                contentDescription = "Profile",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -236,12 +272,18 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp),
-                placeholder = { Text("Search bookmarks...") },
+                placeholder = { 
+                    Text(
+                        text = "Search your library...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    ) 
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        modifier = Modifier.height(18.dp)
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 singleLine = true,
@@ -249,8 +291,8 @@ fun HomeScreen(
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
                     unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
 
@@ -261,11 +303,19 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        FilterChip(
-                            selected = uiState.selectedGroupId == null,
+                        val isAllSelected = uiState.selectedGroupId == null
+                        androidx.compose.material3.Surface(
                             onClick = { viewModel.onGroupSelected(null) },
-                            label = { Text("All") }
-                        )
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(percent = 50),
+                            color = if (isAllSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+                        ) {
+                            Text(
+                                text = "All",
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
+                                color = if (isAllSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
+                            )
+                        }
                     }
                     items(uiState.groups) { group ->
                         GroupChip(
