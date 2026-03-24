@@ -50,6 +50,7 @@ import com.sayeedjoy.linkarena.ui.components.LoadingButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddBookmarkScreen(
+    initialUrl: String? = null,
     onNavigateBack: () -> Unit,
     onBookmarkCreated: () -> Unit,
     viewModel: AddBookmarkViewModel = hiltViewModel()
@@ -66,6 +67,10 @@ fun AddBookmarkScreen(
         if (uiState.isSuccess) {
             onBookmarkCreated()
         }
+    }
+
+    LaunchedEffect(initialUrl) {
+        initialUrl?.let(viewModel::prefillUrlIfEmpty)
     }
 
     Scaffold(

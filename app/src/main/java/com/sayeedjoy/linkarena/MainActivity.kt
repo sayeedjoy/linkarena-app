@@ -1,6 +1,8 @@
 package com.sayeedjoy.linkarena
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
@@ -35,8 +39,11 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var themePreferencesRepository: ThemePreferencesRepository
 
+    private var pendingSharedUrl by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleIncomingShareIntent(intent)
         enableEdgeToEdge()
         setContent {
             val themeMode by themePreferencesRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
@@ -58,15 +65,39 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LinkArenaApp(authRepository = authRepository)
+                    LinkArenaApp(
+                        authRepository = authRepository,
+                        sharedUrl = pendingSharedUrl,
+                        onSharedUrlConsumed = { pendingSharedUrl = null }
+                    )
                 }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIncomingShareIntent(intent)
+    }
+
+    private fun handleIncomingShareIntent(intent: Intent?) {
+        val sharedUrl = intent.extractSharedUrl()
+        when {
+            sharedUrl != null -> pendingSharedUrl = sharedUrl
+            intent?.action == Intent.ACTION_SEND -> {
+                Toast.makeText(this, "No valid link found in shared content", Toast.LENGTH_SHORT).show()
             }
         }
     }
 }
 
 @Composable
-fun LinkArenaApp(authRepository: AuthRepository) {
+fun LinkArenaApp(
+    authRepository: AuthRepository,
+    sharedUrl: String? = null,
+    onSharedUrlConsumed: () -> Unit = {}
+) {
     val navController = rememberNavController()
     val isLoggedIn by authRepository.isLoggedIn
         .map<Boolean, Boolean?> { it }
@@ -77,7 +108,9 @@ fun LinkArenaApp(authRepository: AuthRepository) {
         true -> {
             MainNavGraph(
                 navController = navController,
-                onLogout = {}
+                onLogout = {},
+                sharedUrl = sharedUrl,
+                onSharedUrlConsumed = onSharedUrlConsumed
             )
         }
         false -> {
@@ -87,4 +120,55 @@ fun LinkArenaApp(authRepository: AuthRepository) {
             )
         }
     }
+}
+
+private fun Intent?.extractSharedUrl(): String? {
+    if (this?.action != Intent.ACTION_SEND) return null
+
+    val shareText = buildString {
+        append(getStringExtra(Intent.EXTRA_TEXT).orEmpty())
+        append(' ')
+        append(getStringExtra(Intent.EXTRA_SUBJECT).orEmpty())
+    }.trim()
+    val urlCandidate = shareText.extractFirstUrlCandidate() ?: return null
+    return urlCandidate.normalizeSharedUrl()
+}
+
+private fun String.extractFirstUrlCandidate(): String? {
+    if (isBlank()) return null
+
+    return split("\\s+".toRegex())
+        .asSequence()
+        .map { it.trimUrlPunctuation() }
+        .firstOrNull { token ->
+            token.startsWith("http://", ignoreCase = true) ||
+                token.startsWith("https://", ignoreCase = true) ||
+                token.startsWith("www.", ignoreCase = true) ||
+                token.looksLikeDomain()
+        }
+}
+
+private fun String.normalizeSharedUrl(): String? {
+    val candidate = when {
+        startsWith("http://", ignoreCase = true) || startsWith("https://", ignoreCase = true) -> this
+        else -> "https://$this"
+    }
+
+    return try {
+        val uri = android.net.Uri.parse(candidate)
+        if (!uri.host.isNullOrBlank()) candidate else null
+    } catch (e: Exception) {
+        null
+    }
+}
+
+private fun String.looksLikeDomain(): Boolean {
+    if (contains("@")) return false
+    return Regex("^[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+(/.*)?$").matches(this)
+}
+
+private fun String.trimUrlPunctuation(): String {
+    return trim()
+        .trim(',', '.', ';', ':', '!', '?', ')', ']', '}', '>', '"', '\'')
+        .trimStart('(', '[', '{', '<', '"', '\'')
 }

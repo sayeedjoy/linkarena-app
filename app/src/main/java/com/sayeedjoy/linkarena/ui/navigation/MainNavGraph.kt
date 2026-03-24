@@ -1,9 +1,12 @@
 package com.sayeedjoy.linkarena.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.sayeedjoy.linkarena.ui.bookmark.AddBookmarkScreen
 import com.sayeedjoy.linkarena.ui.bookmark.BookmarkDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupsScreen
@@ -13,8 +16,19 @@ import com.sayeedjoy.linkarena.ui.settings.SettingsScreen
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    sharedUrl: String? = null,
+    onSharedUrlConsumed: () -> Unit = {}
 ) {
+    LaunchedEffect(sharedUrl) {
+        if (!sharedUrl.isNullOrBlank()) {
+            navController.navigate(Screen.AddBookmark.createRoute(sharedUrl)) {
+                launchSingleTop = true
+            }
+            onSharedUrlConsumed()
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route
@@ -22,7 +36,7 @@ fun MainNavGraph(
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToAddBookmark = {
-                    navController.navigate(Screen.AddBookmark.route)
+                    navController.navigate(Screen.AddBookmark.createRoute())
                 },
                 onNavigateToBookmarkDetail = { bookmarkId ->
                     navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
@@ -36,8 +50,19 @@ fun MainNavGraph(
             )
         }
 
-        composable(Screen.AddBookmark.route) {
+        composable(
+            route = Screen.AddBookmark.route,
+            arguments = listOf(
+                navArgument(Screen.AddBookmark.ARG_SHARED_URL) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val sharedUrlArg = backStackEntry.arguments?.getString(Screen.AddBookmark.ARG_SHARED_URL)
             AddBookmarkScreen(
+                initialUrl = sharedUrlArg,
                 onNavigateBack = {
                     navController.popBackStack()
                 },

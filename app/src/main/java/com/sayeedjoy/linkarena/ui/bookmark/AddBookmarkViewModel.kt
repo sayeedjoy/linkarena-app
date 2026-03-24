@@ -58,6 +58,12 @@ class AddBookmarkViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(url = url, error = null)
     }
 
+    fun prefillUrlIfEmpty(url: String) {
+        if (_uiState.value.url.isBlank()) {
+            _uiState.value = _uiState.value.copy(url = url.trim(), error = null)
+        }
+    }
+
     fun onTitleChange(title: String) {
         _uiState.value = _uiState.value.copy(title = title)
     }
