@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -21,13 +20,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,6 +49,14 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val topBarColor = MaterialTheme.colorScheme.background
+    val displayEmail = uiState.userEmail?.takeIf { it.isNotBlank() } ?: "No email"
+    val displayName = uiState.userName
+        ?.takeIf { it.isNotBlank() }
+        ?: uiState.userEmail
+            ?.substringBefore("@")
+            ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        ?: "User"
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -76,17 +83,14 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = topBarColor,
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = topBarColor,
+                    scrolledContainerColor = topBarColor
+                )
             )
         }
     ) { padding ->
@@ -125,11 +129,11 @@ fun SettingsScreen(
 
                     Column {
                         Text(
-                            text = uiState.userName ?: "User",
+                            text = displayName,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = uiState.userEmail ?: "",
+                            text = displayEmail,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

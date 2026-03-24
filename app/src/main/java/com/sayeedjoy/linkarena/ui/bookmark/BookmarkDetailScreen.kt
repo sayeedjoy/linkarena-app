@@ -140,6 +140,7 @@ fun BookmarkDetailScreen(
                         label = { Text("URL") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                         enabled = !uiState.isSaving
                     )
 
@@ -151,6 +152,7 @@ fun BookmarkDetailScreen(
                         label = { Text("Title") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                         enabled = !uiState.isSaving
                     )
 
@@ -163,6 +165,7 @@ fun BookmarkDetailScreen(
                         minLines = 3,
                         maxLines = 5,
                         modifier = Modifier.fillMaxWidth(),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                         enabled = !uiState.isSaving
                     )
 
@@ -189,6 +192,7 @@ fun BookmarkDetailScreen(
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                             enabled = !uiState.isSaving
                         )
 

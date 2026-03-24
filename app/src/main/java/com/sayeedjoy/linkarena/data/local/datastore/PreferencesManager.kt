@@ -70,7 +70,11 @@ class PreferencesManager @Inject constructor(
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ID] = id
             preferences[PreferencesKeys.USER_EMAIL] = email
-            name?.let { preferences[PreferencesKeys.USER_NAME] = it }
+            if (name.isNullOrBlank()) {
+                preferences.remove(PreferencesKeys.USER_NAME)
+            } else {
+                preferences[PreferencesKeys.USER_NAME] = name
+            }
         }
     }
 

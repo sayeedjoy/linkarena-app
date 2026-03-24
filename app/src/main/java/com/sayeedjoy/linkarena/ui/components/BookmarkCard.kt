@@ -1,6 +1,5 @@
 package com.sayeedjoy.linkarena.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,10 +64,9 @@ fun BookmarkCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        border = BorderStroke(1.dp, colorScheme.outlineVariant)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerLow)
     ) {
         Row(
             modifier = Modifier

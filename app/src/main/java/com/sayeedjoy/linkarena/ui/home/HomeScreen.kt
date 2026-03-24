@@ -3,14 +3,19 @@ package com.sayeedjoy.linkarena.ui.home
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,9 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -35,15 +38,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,13 +63,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.seconds
 
+/** Describes the type of content to show — transitions only fire on enum changes, not data updates. */
+private enum class ContentState { Loading, Error, Empty, Content }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToAddBookmark: () -> Unit,
     onNavigateToBookmarkDetail: (String) -> Unit,
-    onNavigateToGroups: () -> Unit,
-    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val autoRevalidateIntervalMs = 30.seconds.inWholeMilliseconds
@@ -74,6 +81,20 @@ fun HomeScreen(
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
     var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
     val bookmarkListState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topBarColor = MaterialTheme.colorScheme.background
+
+    // Derive a stable content-state enum so AnimatedContent only transitions on type changes
+    val contentState by remember {
+        derivedStateOf {
+            when {
+                uiState.bookmarks.isNotEmpty() -> ContentState.Content
+                uiState.isLoading -> ContentState.Loading
+                uiState.error != null -> ContentState.Error
+                else -> ContentState.Empty
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (isActive) {
@@ -140,6 +161,9 @@ fun HomeScreen(
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = topBarColor,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = {
@@ -149,6 +173,11 @@ fun HomeScreen(
                         Text("LinkArena")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = topBarColor,
+                    scrolledContainerColor = topBarColor
+                ),
+                scrollBehavior = scrollBehavior,
                 actions = {
                     if (isSelectionMode) {
                         IconButton(
@@ -175,26 +204,18 @@ fun HomeScreen(
                                 contentDescription = "Close selection"
                             )
                         }
-                    } else {
-                        IconButton(onClick = onNavigateToGroups) {
-                            Icon(
-                                imageVector = Icons.Default.Groups,
-                                contentDescription = "Groups"
-                            )
-                        }
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings"
-                            )
-                        }
                     }
                 }
             )
         },
         floatingActionButton = {
             if (!isSelectionMode) {
-                FloatingActionButton(onClick = onNavigateToAddBookmark) {
+                FloatingActionButton(
+                    onClick = onNavigateToAddBookmark,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Bookmark"
@@ -214,7 +235,6 @@ fun HomeScreen(
                 onValueChange = viewModel::onSearchQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 48.dp)
                     .padding(horizontal = 16.dp, vertical = 6.dp),
                 placeholder = { Text("Search bookmarks...") },
                 leadingIcon = {
@@ -224,7 +244,14 @@ fun HomeScreen(
                         modifier = Modifier.height(18.dp)
                     )
                 },
-                singleLine = true
+                singleLine = true,
+                shape = androidx.compose.foundation.shape.CircleShape,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
             )
 
             // Group filter chips
@@ -251,84 +278,100 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Content
-            when {
-                uiState.bookmarks.isNotEmpty() -> {
-                    PullToRefreshBox(
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = viewModel::refresh,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        LazyColumn(
-                            state = bookmarkListState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+            // Content — transition only fires when contentState enum changes
+            AnimatedContent(
+                targetState = contentState,
+                label = "home_content",
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
+                }
+            ) { state ->
+                when (state) {
+                    ContentState.Content -> {
+                        PullToRefreshBox(
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = viewModel::refresh,
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            items(
-                                items = uiState.bookmarks,
-                                key = { it.id }
-                            ) { bookmark ->
-                                BookmarkCard(
-                                    bookmark = bookmark,
-                                    onClick = {
-                                        if (isSelectionMode) {
-                                            selectedBookmarkIds = if (selectedBookmarkIds.contains(bookmark.id)) {
-                                                selectedBookmarkIds - bookmark.id
+                            LazyColumn(
+                                state = bookmarkListState,
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 8.dp,
+                                    bottom = 8.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(
+                                    items = uiState.bookmarks,
+                                    key = { it.id }
+                                ) { bookmark ->
+                                    BookmarkCard(
+                                        bookmark = bookmark,
+                                        modifier = Modifier.animateItem(),
+                                        onClick = {
+                                            if (isSelectionMode) {
+                                                selectedBookmarkIds = if (selectedBookmarkIds.contains(bookmark.id)) {
+                                                    selectedBookmarkIds - bookmark.id
+                                                } else {
+                                                    selectedBookmarkIds + bookmark.id
+                                                }
+                                                if (selectedBookmarkIds.isEmpty()) {
+                                                    isSelectionMode = false
+                                                }
                                             } else {
-                                                selectedBookmarkIds + bookmark.id
+                                                val isOpened = openBookmarkInBrowser(
+                                                    context = context,
+                                                    url = bookmark.url
+                                                )
+                                                if (!isOpened) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Invalid link",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                             }
-                                            if (selectedBookmarkIds.isEmpty()) {
-                                                isSelectionMode = false
-                                            }
-                                        } else {
-                                            val isOpened = openBookmarkInBrowser(
-                                                context = context,
-                                                url = bookmark.url
+                                        },
+                                        onRefetch = { viewModel.refetchBookmark(bookmark.id) },
+                                        onFaviconResolved = { resolvedFaviconUrl ->
+                                            viewModel.cacheBookmarkFavicon(
+                                                bookmarkId = bookmark.id,
+                                                faviconUrl = resolvedFaviconUrl
                                             )
-                                            if (!isOpened) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Invalid link",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        }
-                                    },
-                                    onRefetch = { viewModel.refetchBookmark(bookmark.id) },
-                                    onFaviconResolved = { resolvedFaviconUrl ->
-                                        viewModel.cacheBookmarkFavicon(
-                                            bookmarkId = bookmark.id,
-                                            faviconUrl = resolvedFaviconUrl
-                                        )
-                                    },
-                                    onGroupSelect = {
-                                        isSelectionMode = true
-                                        selectedBookmarkIds = setOf(bookmark.id)
-                                    },
-                                    onEdit = { onNavigateToBookmarkDetail(bookmark.id) },
-                                    onDelete = { bookmarkPendingDelete = bookmark },
-                                    isSelectionMode = isSelectionMode,
-                                    isSelected = selectedBookmarkIds.contains(bookmark.id)
-                                )
+                                        },
+                                        onGroupSelect = {
+                                            isSelectionMode = true
+                                            selectedBookmarkIds = setOf(bookmark.id)
+                                        },
+                                        onEdit = { onNavigateToBookmarkDetail(bookmark.id) },
+                                        onDelete = { bookmarkPendingDelete = bookmark },
+                                        isSelectionMode = isSelectionMode,
+                                        isSelected = selectedBookmarkIds.contains(bookmark.id)
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                uiState.isLoading -> {
-                    LoadingIndicator()
-                }
-                uiState.error != null -> {
-                    ErrorMessage(
-                        message = uiState.error!!,
-                        onRetry = viewModel::refresh
-                    )
-                }
-                else -> {
-                    EmptyState(
-                        title = "No bookmarks yet",
-                        message = "Tap the + button to add your first bookmark"
-                    )
+                    ContentState.Loading -> {
+                        LoadingIndicator(modifier = Modifier.fillMaxSize())
+                    }
+                    ContentState.Error -> {
+                        ErrorMessage(
+                            message = uiState.error ?: "Unknown error",
+                            onRetry = viewModel::refresh,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    ContentState.Empty -> {
+                        EmptyState(
+                            title = "No bookmarks yet",
+                            message = "Tap the + button to add your first bookmark",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }

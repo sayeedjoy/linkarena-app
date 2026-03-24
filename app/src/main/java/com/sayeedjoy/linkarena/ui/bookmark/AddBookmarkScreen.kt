@@ -109,6 +109,7 @@ fun AddBookmarkScreen(
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                 placeholder = { Text("https://example.com") }
             )
 
@@ -126,6 +127,7 @@ fun AddBookmarkScreen(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
                 modifier = Modifier.fillMaxWidth(),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                 enabled = !uiState.isLoading
             )
 
@@ -138,6 +140,7 @@ fun AddBookmarkScreen(
                 minLines = 3,
                 maxLines = 5,
                 modifier = Modifier.fillMaxWidth(),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                 enabled = !uiState.isLoading
             )
 
@@ -165,6 +168,7 @@ fun AddBookmarkScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                     enabled = !uiState.isLoading
                 )
 

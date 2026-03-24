@@ -2,7 +2,10 @@ package com.sayeedjoy.linkarena.data.repository
 
 import com.sayeedjoy.linkarena.data.local.datastore.PreferencesManager
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
-import com.sayeedjoy.linkarena.data.remote.dto.*
+import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
+import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
+import com.sayeedjoy.linkarena.data.remote.dto.SignInRequest
+import com.sayeedjoy.linkarena.data.remote.dto.SignUpRequest
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
@@ -25,9 +28,12 @@ class AuthRepositoryImpl @Inject constructor(
             if (response.isSuccessful && response.body()?.token != null) {
                 val body = response.body()!!
                 preferencesManager.saveAuthToken(body.token!!)
-                body.user?.let {
-                    preferencesManager.saveUser(it.id, it.email, it.name)
-                }
+                val user = body.user
+                preferencesManager.saveUser(
+                    id = user?.id ?: email,
+                    email = user?.email?.ifBlank { email } ?: email,
+                    name = user?.name
+                )
                 NetworkResult.Success(Unit)
             } else {
                 NetworkResult.Error(response.body()?.error ?: "Sign in failed")
@@ -43,9 +49,12 @@ class AuthRepositoryImpl @Inject constructor(
             if (response.isSuccessful && response.body()?.token != null) {
                 val body = response.body()!!
                 preferencesManager.saveAuthToken(body.token!!)
-                body.user?.let {
-                    preferencesManager.saveUser(it.id, it.email, it.name)
-                }
+                val user = body.user
+                preferencesManager.saveUser(
+                    id = user?.id ?: email,
+                    email = user?.email?.ifBlank { email } ?: email,
+                    name = user?.name?.ifBlank { name } ?: name
+                )
                 NetworkResult.Success(Unit)
             } else {
                 NetworkResult.Error(response.body()?.error ?: "Sign up failed")
@@ -90,7 +99,6 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.getSession()
             if (response.isSuccessful && response.body()?.user != null) {
                 val user = response.body()!!.user!!
-                preferencesManager.clearAuthToken()
                 preferencesManager.saveUser(user.id, user.email, user.name)
                 NetworkResult.Success(Unit)
             } else {

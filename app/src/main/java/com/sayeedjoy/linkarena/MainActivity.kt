@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
@@ -54,13 +55,17 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
             }
 
-            SideEffect {
-                val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-                insetsController.isAppearanceLightStatusBars = !isDarkTheme
-                insetsController.isAppearanceLightNavigationBars = !isDarkTheme
-            }
-
             LinkArenaTheme(isDarkTheme = isDarkTheme) {
+                val systemBarColor = MaterialTheme.colorScheme.background
+
+                SideEffect {
+                    val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = !isDarkTheme
+                    insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+                    window.statusBarColor = systemBarColor.toArgb()
+                    window.navigationBarColor = systemBarColor.toArgb()
+                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
