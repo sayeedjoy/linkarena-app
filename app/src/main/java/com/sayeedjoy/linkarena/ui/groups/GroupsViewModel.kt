@@ -6,10 +6,13 @@ import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.domain.usecase.groups.CreateGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.DeleteGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.UpdateGroupUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,7 +27,8 @@ class GroupsViewModel @Inject constructor(
     private val getGroupsUseCase: GetGroupsUseCase,
     private val createGroupUseCase: CreateGroupUseCase,
     private val updateGroupUseCase: UpdateGroupUseCase,
-    private val deleteGroupUseCase: DeleteGroupUseCase
+    private val deleteGroupUseCase: DeleteGroupUseCase,
+    private val syncGroupsUseCase: SyncGroupsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupsUiState())
@@ -32,6 +36,7 @@ class GroupsViewModel @Inject constructor(
 
     init {
         observeGroups()
+        syncGroups()
     }
 
     private fun observeGroups() {
@@ -39,6 +44,17 @@ class GroupsViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
             getGroupsUseCase().collect { groups ->
                 _uiState.value = _uiState.value.copy(groups = groups, isLoading = false)
+            }
+        }
+    }
+
+    private fun syncGroups() {
+        viewModelScope.launch {
+            when (val result = syncGroupsUseCase()) {
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
             }
         }
     }

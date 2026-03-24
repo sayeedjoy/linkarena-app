@@ -10,7 +10,14 @@ data class GroupDto(
     val color: String? = null,
     val order: Int = 0,
     @SerialName("bookmarkCount")
-    val bookmarkCount: Int = 0
+    val bookmarkCount: Int = 0,
+    @SerialName("_count")
+    val count: GroupCountDto? = null
+)
+
+@Serializable
+data class GroupCountDto(
+    val bookmarks: Int = 0
 )
 
 @Serializable

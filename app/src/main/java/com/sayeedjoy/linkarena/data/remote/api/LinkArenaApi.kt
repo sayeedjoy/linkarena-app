@@ -1,8 +1,32 @@
 package com.sayeedjoy.linkarena.data.remote.api
 
-import com.sayeedjoy.linkarena.data.remote.dto.*
+import com.sayeedjoy.linkarena.data.remote.dto.AuthResponse
+import com.sayeedjoy.linkarena.data.remote.dto.BookmarkResponse
+import com.sayeedjoy.linkarena.data.remote.dto.CreateBookmarkRequest
+import com.sayeedjoy.linkarena.data.remote.dto.CreateGroupRequest
+import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
+import com.sayeedjoy.linkarena.data.remote.dto.GroupListResponse
+import com.sayeedjoy.linkarena.data.remote.dto.GroupResponse
+import com.sayeedjoy.linkarena.data.remote.dto.MessageResponse
+import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
+import com.sayeedjoy.linkarena.data.remote.dto.SessionResponse
+import com.sayeedjoy.linkarena.data.remote.dto.SettingsResponse
+import com.sayeedjoy.linkarena.data.remote.dto.SignInRequest
+import com.sayeedjoy.linkarena.data.remote.dto.SignUpRequest
+import com.sayeedjoy.linkarena.data.remote.dto.SyncResponseDto
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkCategoryRequest
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkRequest
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateGroupRequest
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateSettingsRequest
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface LinkArenaApi {
 
@@ -55,13 +79,13 @@ interface LinkArenaApi {
     @POST("api/groups")
     suspend fun createGroup(@Body request: CreateGroupRequest): Response<GroupResponse>
 
-    @PATCH("api/categories/{id}")
+    @PATCH("api/groups/{id}")
     suspend fun updateGroup(
         @Path("id") id: String,
         @Body request: UpdateGroupRequest
     ): Response<GroupResponse>
 
-    @DELETE("api/categories/{id}")
+    @DELETE("api/groups/{id}")
     suspend fun deleteGroup(@Path("id") id: String): Response<MessageResponse>
 
     // Settings

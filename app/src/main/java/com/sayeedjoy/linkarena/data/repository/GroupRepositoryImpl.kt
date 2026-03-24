@@ -3,7 +3,9 @@ package com.sayeedjoy.linkarena.data.repository
 import com.sayeedjoy.linkarena.data.local.db.GroupDao
 import com.sayeedjoy.linkarena.data.local.db.entity.GroupEntity
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
-import com.sayeedjoy.linkarena.data.remote.dto.*
+import com.sayeedjoy.linkarena.data.remote.dto.CreateGroupRequest
+import com.sayeedjoy.linkarena.data.remote.dto.GroupDto
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateGroupRequest
 import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
@@ -107,6 +109,6 @@ class GroupRepositoryImpl @Inject constructor(
         name = name,
         color = color,
         order = order,
-        bookmarkCount = bookmarkCount
+        bookmarkCount = if (bookmarkCount != 0) bookmarkCount else (count?.bookmarks ?: 0)
     )
 }

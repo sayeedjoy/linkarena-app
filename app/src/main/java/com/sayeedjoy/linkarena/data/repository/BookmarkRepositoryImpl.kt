@@ -1,9 +1,15 @@
 package com.sayeedjoy.linkarena.data.repository
 
 import com.sayeedjoy.linkarena.data.local.db.BookmarkDao
+import com.sayeedjoy.linkarena.data.local.db.GroupDao
 import com.sayeedjoy.linkarena.data.local.db.entity.BookmarkEntity
+import com.sayeedjoy.linkarena.data.local.db.entity.GroupEntity
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
-import com.sayeedjoy.linkarena.data.remote.dto.*
+import com.sayeedjoy.linkarena.data.remote.dto.BookmarkDto
+import com.sayeedjoy.linkarena.data.remote.dto.CreateBookmarkRequest
+import com.sayeedjoy.linkarena.data.remote.dto.GroupDto
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkCategoryRequest
+import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkRequest
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.domain.repository.BookmarkRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
@@ -13,7 +19,8 @@ import javax.inject.Inject
 
 class BookmarkRepositoryImpl @Inject constructor(
     private val api: LinkArenaApi,
-    private val bookmarkDao: BookmarkDao
+    private val bookmarkDao: BookmarkDao,
+    private val groupDao: GroupDao
 ) : BookmarkRepository {
 
     override fun getBookmarks(): Flow<List<Bookmark>> {
@@ -118,6 +125,8 @@ class BookmarkRepositoryImpl @Inject constructor(
 
             val initial = initialResponse.body()!!
             bookmarkDao.insertAll(initial.bookmarks.map { it.toDomain().toEntity() })
+            groupDao.deleteAll()
+            groupDao.insertAll(initial.groups.map { it.toEntity() })
 
             var hasMore = initial.hasMore
             var cursor = initial.nextCursor
@@ -172,5 +181,13 @@ class BookmarkRepositoryImpl @Inject constructor(
         groupId = groupId,
         createdAt = createdAt,
         updatedAt = updatedAt
+    )
+
+    private fun GroupDto.toEntity() = GroupEntity(
+        id = id,
+        name = name,
+        color = color,
+        order = order,
+        bookmarkCount = if (bookmarkCount != 0) bookmarkCount else (count?.bookmarks ?: 0)
     )
 }

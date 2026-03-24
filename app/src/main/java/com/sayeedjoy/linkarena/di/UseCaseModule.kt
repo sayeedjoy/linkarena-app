@@ -16,6 +16,7 @@ import com.sayeedjoy.linkarena.domain.usecase.bookmarks.UpdateBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.CreateGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.DeleteGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.UpdateGroupUseCase
 import dagger.Module
 import dagger.Provides
@@ -109,5 +110,11 @@ object UseCaseModule {
     @ViewModelScoped
     fun provideDeleteGroupUseCase(groupRepository: GroupRepository): DeleteGroupUseCase {
         return DeleteGroupUseCase(groupRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideSyncGroupsUseCase(groupRepository: GroupRepository): SyncGroupsUseCase {
+        return SyncGroupsUseCase(groupRepository)
     }
 }

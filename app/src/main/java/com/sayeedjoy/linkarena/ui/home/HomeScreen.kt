@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.ui.components.BookmarkCard
 import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.ErrorMessage
@@ -64,6 +65,7 @@ fun HomeScreen(
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedBookmarkIds by remember { mutableStateOf(setOf<String>()) }
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
+    var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
 
     if (showBulkDeleteDialog) {
         AlertDialog(
@@ -87,6 +89,35 @@ fun HomeScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showBulkDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    bookmarkPendingDelete?.let { bookmark ->
+        AlertDialog(
+            onDismissRequest = { bookmarkPendingDelete = null },
+            title = { Text("Delete Bookmark") },
+            text = {
+                Text(
+                    "Are you sure you want to delete \"${
+                        bookmark.title ?: bookmark.url ?: "this bookmark"
+                    }\"?"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteBookmark(bookmark.id)
+                        bookmarkPendingDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { bookmarkPendingDelete = null }) {
                     Text("Cancel")
                 }
             }
@@ -208,19 +239,7 @@ fun HomeScreen(
                 uiState.isLoading -> {
                     LoadingIndicator()
                 }
-                uiState.error != null -> {
-                    ErrorMessage(
-                        message = uiState.error!!,
-                        onRetry = viewModel::refresh
-                    )
-                }
-                uiState.bookmarks.isEmpty() -> {
-                    EmptyState(
-                        title = "No bookmarks yet",
-                        message = "Tap the + button to add your first bookmark"
-                    )
-                }
-                else -> {
+                uiState.bookmarks.isNotEmpty() -> {
                     PullToRefreshBox(
                         isRefreshing = uiState.isRefreshing,
                         onRefresh = viewModel::refresh,
@@ -267,13 +286,25 @@ fun HomeScreen(
                                         selectedBookmarkIds = setOf(bookmark.id)
                                     },
                                     onEdit = { onNavigateToBookmarkDetail(bookmark.id) },
-                                    onDelete = { viewModel.deleteBookmark(bookmark.id) },
+                                    onDelete = { bookmarkPendingDelete = bookmark },
                                     isSelectionMode = isSelectionMode,
                                     isSelected = selectedBookmarkIds.contains(bookmark.id)
                                 )
                             }
                         }
                     }
+                }
+                uiState.error != null -> {
+                    ErrorMessage(
+                        message = uiState.error!!,
+                        onRetry = viewModel::refresh
+                    )
+                }
+                else -> {
+                    EmptyState(
+                        title = "No bookmarks yet",
+                        message = "Tap the + button to add your first bookmark"
+                    )
                 }
             }
         }

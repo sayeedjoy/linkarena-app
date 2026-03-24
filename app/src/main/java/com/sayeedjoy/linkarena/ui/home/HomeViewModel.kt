@@ -10,6 +10,7 @@ import com.sayeedjoy.linkarena.domain.usecase.bookmarks.MoveBookmarkToGroupUseCa
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.RefetchBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.SyncBookmarksUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,8 @@ class HomeViewModel @Inject constructor(
     private val moveBookmarkToGroupUseCase: MoveBookmarkToGroupUseCase,
     private val refetchBookmarkUseCase: RefetchBookmarkUseCase,
     private val syncBookmarksUseCase: SyncBookmarksUseCase,
-    private val getGroupsUseCase: GetGroupsUseCase
+    private val getGroupsUseCase: GetGroupsUseCase,
+    private val syncGroupsUseCase: SyncGroupsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -54,7 +56,7 @@ class HomeViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             when (val result = syncBookmarksUseCase()) {
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
@@ -63,8 +65,18 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 else -> {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = null
+                    )
                 }
+            }
+
+            when (val result = syncGroupsUseCase()) {
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
             }
         }
     }
@@ -107,8 +119,14 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isRefreshing = true)
+            _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
             when (val result = syncBookmarksUseCase()) {
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
+            }
+            when (val result = syncGroupsUseCase()) {
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(error = result.message)
                 }
