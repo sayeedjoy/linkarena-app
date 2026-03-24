@@ -1,6 +1,6 @@
 package com.sayeedjoy.linkarena.ui.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +13,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,13 +54,17 @@ fun BookmarkCard(
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    val faviconSize = 24.dp
+    val colorScheme = MaterialTheme.colorScheme
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        border = BorderStroke(1.dp, colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -66,10 +74,7 @@ fun BookmarkCard(
         ) {
             // Favicon
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.size(faviconSize),
                 contentAlignment = Alignment.Center
             ) {
                 val faviconCandidates = remember(bookmark.faviconUrl, bookmark.url) {
@@ -89,8 +94,9 @@ fun BookmarkCard(
                     AsyncImage(
                         model = iconUrl,
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(faviconSize),
                         contentScale = ContentScale.Fit,
+                        filterQuality = FilterQuality.High,
                         onError = {
                             if (faviconIndex < faviconCandidates.lastIndex) {
                                 faviconIndex += 1
@@ -153,31 +159,63 @@ fun BookmarkCard(
                     }
                     DropdownMenu(
                         expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
+                        onDismissRequest = { showMenu = false },
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 0.dp,
+                        shadowElevation = 0.dp,
+                        containerColor = colorScheme.surface
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Refetch") },
+                            text = { Text("Refetch", style = MaterialTheme.typography.bodyMedium) },
                             onClick = {
                                 showMenu = false
                                 onRefetch()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Group select") },
+                            text = { Text("Move to group", style = MaterialTheme.typography.bodyMedium) },
                             onClick = {
                                 showMenu = false
                                 onGroupSelect()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DriveFileMove,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Edit") },
+                            text = { Text("Edit", style = MaterialTheme.typography.bodyMedium) },
                             onClick = {
                                 showMenu = false
                                 onEdit()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         )
+                        HorizontalDivider(color = colorScheme.outlineVariant)
                         DropdownMenuItem(
-                            text = { Text("Delete") },
+                            text = {
+                                Text(
+                                    "Delete",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
                             onClick = {
                                 showMenu = false
                                 onDelete()
