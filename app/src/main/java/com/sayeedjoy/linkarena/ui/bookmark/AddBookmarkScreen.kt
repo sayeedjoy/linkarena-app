@@ -241,7 +241,7 @@ fun AddBookmarkScreen(
                 onClick = viewModel::createBookmark,
                 isLoading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.url.isNotBlank()
+                enabled = uiState.url.isNotBlank() && !uiState.isFetchingMetadata
             ) {
                 Text("Add Bookmark")
             }
