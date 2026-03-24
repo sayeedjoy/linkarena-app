@@ -126,9 +126,10 @@ class BookmarkRepositoryImpl @Inject constructor(
             }
 
             val initial = initialResponse.body()!!
-            bookmarkDao.insertAll(initial.bookmarks.map { it.toDomain().toEntity() })
-            groupDao.deleteAll()
-            groupDao.insertAll(initial.groups.map { it.toEntity() })
+            val allBookmarks = mutableListOf<BookmarkEntity>()
+            allBookmarks.addAll(initial.bookmarks.map { it.toDomain().toEntity() })
+            val allGroups = mutableListOf<GroupEntity>()
+            allGroups.addAll(initial.groups.map { it.toEntity() })
 
             var hasMore = initial.hasMore
             var cursor = initial.nextCursor
@@ -136,13 +137,21 @@ class BookmarkRepositoryImpl @Inject constructor(
                 val pageResponse = api.sync(cursor = cursor)
                 if (pageResponse.isSuccessful) {
                     val page = pageResponse.body()!!
-                    bookmarkDao.insertAll(page.bookmarks.map { it.toDomain().toEntity() })
+                    allBookmarks.addAll(page.bookmarks.map { it.toDomain().toEntity() })
+                    allGroups.addAll(page.groups.map { it.toEntity() })
                     hasMore = page.hasMore
                     cursor = page.nextCursor
                 } else {
                     break
                 }
             }
+
+            // Replace local snapshot so deletions performed from other clients are reflected.
+            bookmarkDao.deleteAll()
+            bookmarkDao.insertAll(allBookmarks)
+            groupDao.deleteAll()
+            groupDao.insertAll(allGroups.distinctBy { it.id })
+
             NetworkResult.Success(Unit)
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")

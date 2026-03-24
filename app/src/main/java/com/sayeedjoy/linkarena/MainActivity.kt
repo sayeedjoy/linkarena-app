@@ -21,13 +21,19 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
+import com.sayeedjoy.linkarena.domain.repository.BookmarkRepository
+import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.domain.repository.ThemePreferencesRepository
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.navigation.AuthNavGraph
 import com.sayeedjoy.linkarena.ui.navigation.MainNavGraph
 import com.sayeedjoy.linkarena.ui.theme.LinkArenaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -38,6 +44,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var themePreferencesRepository: ThemePreferencesRepository
+
+    @Inject
+    lateinit var bookmarkRepository: BookmarkRepository
+
+    @Inject
+    lateinit var groupRepository: GroupRepository
 
     private var pendingSharedUrl by mutableStateOf<String?>(null)
 
@@ -67,6 +79,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     LinkArenaApp(
                         authRepository = authRepository,
+                        bookmarkRepository = bookmarkRepository,
+                        groupRepository = groupRepository,
                         sharedUrl = pendingSharedUrl,
                         onSharedUrlConsumed = { pendingSharedUrl = null }
                     )
@@ -95,6 +109,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LinkArenaApp(
     authRepository: AuthRepository,
+    bookmarkRepository: BookmarkRepository,
+    groupRepository: GroupRepository,
     sharedUrl: String? = null,
     onSharedUrlConsumed: () -> Unit = {}
 ) {
@@ -106,6 +122,10 @@ fun LinkArenaApp(
     when (isLoggedIn) {
         null -> LoadingIndicator()
         true -> {
+            LaunchedRealtimeSync(
+                bookmarkRepository = bookmarkRepository,
+                groupRepository = groupRepository
+            )
             MainNavGraph(
                 navController = navController,
                 onLogout = {},
@@ -118,6 +138,22 @@ fun LinkArenaApp(
                 navController = navController,
                 onAuthSuccess = {}
             )
+        }
+    }
+}
+
+@Composable
+private fun LaunchedRealtimeSync(
+    bookmarkRepository: BookmarkRepository,
+    groupRepository: GroupRepository
+) {
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (isActive) {
+            withContext(Dispatchers.IO) {
+                bookmarkRepository.syncBookmarks()
+                groupRepository.syncGroups()
+            }
+            delay(5000)
         }
     }
 }
