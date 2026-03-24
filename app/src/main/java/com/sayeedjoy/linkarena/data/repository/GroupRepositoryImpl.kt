@@ -11,11 +11,17 @@ import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import javax.inject.Inject
 
 class GroupRepositoryImpl @Inject constructor(
     private val api: LinkArenaApi,
-    private val groupDao: GroupDao
+    private val groupDao: GroupDao,
+    private val json: Json
 ) : GroupRepository {
 
     override fun getGroups(): Flow<List<Group>> {
@@ -76,12 +82,25 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val response = api.getGroups()
             if (response.isSuccessful) {
-                val groups = response.body()!!.groups.map { it.toDomain().toEntity() }
+                val body = response.body()
+                    ?: return NetworkResult.Error("Sync failed")
+
+                val groupsSerializer = ListSerializer(GroupDto.serializer())
+                val groupDtos: List<GroupDto> = when (body) {
+                    is JsonArray -> json.decodeFromJsonElement(groupsSerializer, body)
+                    else -> {
+                        val groupsElement = body.jsonObject["groups"]
+                            ?: return NetworkResult.Error("Sync failed")
+                        json.decodeFromJsonElement(groupsSerializer, groupsElement.jsonArray)
+                    }
+                }
+
+                val groups = groupDtos.map { it.toDomain().toEntity() }
                 groupDao.deleteAll()
                 groupDao.insertAll(groups)
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Sync failed")
+                NetworkResult.Error("Sync failed")
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")

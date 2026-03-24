@@ -57,8 +57,43 @@ data class DeleteBookmarkRequest(
 @Serializable
 data class BookmarkResponse(
     val bookmark: BookmarkDto? = null,
-    val error: String? = null
-)
+    val error: String? = null,
+    val id: String? = null,
+    val url: String? = null,
+    val title: String? = null,
+    val description: String? = null,
+    @SerialName("faviconUrl")
+    val faviconUrl: String? = null,
+    @SerialName("previewImageUrl")
+    val previewImageUrl: String? = null,
+    @SerialName("groupId")
+    val groupId: String? = null,
+    val group: JsonElement? = null,
+    @SerialName("groupColor")
+    val groupColor: String? = null,
+    @SerialName("createdAt")
+    val createdAt: String = "",
+    @SerialName("updatedAt")
+    val updatedAt: String = ""
+) {
+    fun resolvedBookmark(): BookmarkDto? {
+        bookmark?.let { return it }
+        val bookmarkId = id ?: return null
+        return BookmarkDto(
+            id = bookmarkId,
+            url = url,
+            title = title,
+            description = description,
+            faviconUrl = faviconUrl,
+            previewImageUrl = previewImageUrl,
+            groupId = groupId,
+            group = group,
+            groupColor = groupColor,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
+    }
+}
 
 @Serializable
 data class BookmarkListResponse(

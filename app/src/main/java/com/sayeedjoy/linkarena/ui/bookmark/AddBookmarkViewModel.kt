@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CreateBookmarkUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +28,8 @@ data class AddBookmarkUiState(
 @HiltViewModel
 class AddBookmarkViewModel @Inject constructor(
     private val createBookmarkUseCase: CreateBookmarkUseCase,
-    private val groupRepository: GroupRepository
+    private val groupRepository: GroupRepository,
+    private val syncGroupsUseCase: SyncGroupsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddBookmarkUiState())
@@ -33,6 +37,7 @@ class AddBookmarkViewModel @Inject constructor(
 
     init {
         observeGroups()
+        syncGroups()
     }
 
     private fun observeGroups() {
@@ -40,6 +45,12 @@ class AddBookmarkViewModel @Inject constructor(
             groupRepository.getGroups().collect { groups ->
                 _uiState.value = _uiState.value.copy(groups = groups)
             }
+        }
+    }
+
+    private fun syncGroups() {
+        viewModelScope.launch {
+            syncGroupsUseCase()
         }
     }
 

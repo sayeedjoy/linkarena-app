@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -23,6 +24,7 @@ class PreferencesManager @Inject constructor(
         val USER_ID = stringPreferencesKey("user_id")
         val USER_EMAIL = stringPreferencesKey("user_email")
         val USER_NAME = stringPreferencesKey("user_name")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { preferences ->
@@ -43,6 +45,13 @@ class PreferencesManager @Inject constructor(
 
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.AUTH_TOKEN] != null || preferences[PreferencesKeys.USER_ID] != null
+    }
+
+    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { preferences ->
+        val storedThemeMode = preferences[PreferencesKeys.THEME_MODE]
+        storedThemeMode
+            ?.let { value -> runCatching { ThemeMode.valueOf(value) }.getOrNull() }
+            ?: ThemeMode.SYSTEM
     }
 
     suspend fun saveAuthToken(token: String) {
@@ -71,6 +80,12 @@ class PreferencesManager @Inject constructor(
             preferences.remove(PreferencesKeys.USER_ID)
             preferences.remove(PreferencesKeys.USER_EMAIL)
             preferences.remove(PreferencesKeys.USER_NAME)
+        }
+    }
+
+    suspend fun saveThemeMode(themeMode: ThemeMode) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.THEME_MODE] = themeMode.name
         }
     }
 }

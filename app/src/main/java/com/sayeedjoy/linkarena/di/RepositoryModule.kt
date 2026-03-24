@@ -3,9 +3,11 @@ package com.sayeedjoy.linkarena.di
 import com.sayeedjoy.linkarena.data.repository.AuthRepositoryImpl
 import com.sayeedjoy.linkarena.data.repository.BookmarkRepositoryImpl
 import com.sayeedjoy.linkarena.data.repository.GroupRepositoryImpl
+import com.sayeedjoy.linkarena.data.repository.ThemePreferencesRepositoryImpl
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.domain.repository.BookmarkRepository
 import com.sayeedjoy.linkarena.domain.repository.GroupRepository
+import com.sayeedjoy.linkarena.domain.repository.ThemePreferencesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -27,4 +29,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindGroupRepository(impl: GroupRepositoryImpl): GroupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindThemePreferencesRepository(impl: ThemePreferencesRepositoryImpl): ThemePreferencesRepository
 }

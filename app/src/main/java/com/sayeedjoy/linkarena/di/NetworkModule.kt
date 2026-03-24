@@ -1,6 +1,5 @@
 package com.sayeedjoy.linkarena.di
 
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.sayeedjoy.linkarena.data.local.datastore.PreferencesManager
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
 import com.sayeedjoy.linkarena.data.remote.auth.AuthInterceptor
@@ -9,13 +8,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -68,7 +68,7 @@ object NetworkModule {
             .cookieJar(InMemoryCookieJar())
             .addInterceptor(authInterceptor)
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.BASIC
             })
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

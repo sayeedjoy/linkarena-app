@@ -21,7 +21,7 @@ fun LinkArenaTheme(
     )
     DynamicMaterialTheme(
         state = dynamicThemeState,
-        animate = true,
+        animate = false,
         content = content,
     )
 }

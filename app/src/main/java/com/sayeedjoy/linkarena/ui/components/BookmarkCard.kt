@@ -72,16 +72,30 @@ fun BookmarkCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                val fallbackFaviconUrl = bookmark.url
-                    ?.extractDomain()
-                    ?.let { domain -> "https://www.google.com/s2/favicons?domain=$domain&sz=64" }
-                val iconUrl = bookmark.faviconUrl ?: fallbackFaviconUrl
+                val faviconCandidates = remember(bookmark.faviconUrl, bookmark.url) {
+                    val domain = bookmark.url?.extractDomain()
+                    buildList {
+                        bookmark.faviconUrl
+                            ?.resolveAgainstBookmarkUrl(bookmark.url)
+                            ?.let { add(it) }
+                        domain?.let { add("https://www.google.com/s2/favicons?domain=$it&sz=64") }
+                        domain?.let { add("https://icons.duckduckgo.com/ip3/$it.ico") }
+                    }.distinct()
+                }
+                var faviconIndex by remember(bookmark.id, faviconCandidates) { mutableStateOf(0) }
+                val iconUrl = faviconCandidates.getOrNull(faviconIndex)
+
                 if (iconUrl != null) {
                     AsyncImage(
                         model = iconUrl,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
+                        onError = {
+                            if (faviconIndex < faviconCandidates.lastIndex) {
+                                faviconIndex += 1
+                            }
+                        }
                     )
                 } else {
                     Text(
@@ -189,5 +203,16 @@ private fun String.extractDomain(): String? {
         java.net.URL(url).host
     } catch (e: Exception) {
         null
+    }
+}
+
+private fun String.resolveAgainstBookmarkUrl(bookmarkUrl: String?): String {
+    if (startsWith("http://") || startsWith("https://")) return this
+    if (startsWith("//")) return "https:$this"
+    return try {
+        val baseUrl = bookmarkUrl?.let { if (it.startsWith("http")) it else "https://$it" }
+        if (baseUrl == null) this else java.net.URI(baseUrl).resolve(this).toString()
+    } catch (e: Exception) {
+        this
     }
 }

@@ -5,7 +5,6 @@ import com.sayeedjoy.linkarena.data.remote.dto.BookmarkResponse
 import com.sayeedjoy.linkarena.data.remote.dto.CreateBookmarkRequest
 import com.sayeedjoy.linkarena.data.remote.dto.CreateGroupRequest
 import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
-import com.sayeedjoy.linkarena.data.remote.dto.GroupListResponse
 import com.sayeedjoy.linkarena.data.remote.dto.GroupResponse
 import com.sayeedjoy.linkarena.data.remote.dto.MessageResponse
 import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
@@ -18,6 +17,7 @@ import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkCategoryRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateGroupRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateSettingsRequest
+import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -74,7 +74,7 @@ interface LinkArenaApi {
 
     // Groups
     @GET("api/groups")
-    suspend fun getGroups(): Response<GroupListResponse>
+    suspend fun getGroups(): Response<JsonElement>
 
     @POST("api/groups")
     suspend fun createGroup(@Body request: CreateGroupRequest): Response<GroupResponse>

@@ -48,8 +48,9 @@ class BookmarkRepositoryImpl @Inject constructor(
     override suspend fun createBookmark(url: String, title: String?, description: String?, groupId: String?): NetworkResult<Bookmark> {
         return try {
             val response = api.createBookmark(CreateBookmarkRequest(url, title, description, groupId))
-            if (response.isSuccessful && response.body()?.bookmark != null) {
-                val bookmark = response.body()!!.bookmark!!.toDomain()
+            val resolvedBookmark = response.body()?.resolvedBookmark()
+            if (response.isSuccessful && resolvedBookmark != null) {
+                val bookmark = resolvedBookmark.toDomain()
                 bookmarkDao.insert(bookmark.toEntity())
                 NetworkResult.Success(bookmark)
             } else {
@@ -63,8 +64,9 @@ class BookmarkRepositoryImpl @Inject constructor(
     override suspend fun updateBookmark(url: String, title: String?, description: String?, groupId: String?): NetworkResult<Bookmark> {
         return try {
             val response = api.updateBookmark(UpdateBookmarkRequest(url, title, description, groupId))
-            if (response.isSuccessful && response.body()?.bookmark != null) {
-                val bookmark = response.body()!!.bookmark!!.toDomain()
+            val resolvedBookmark = response.body()?.resolvedBookmark()
+            if (response.isSuccessful && resolvedBookmark != null) {
+                val bookmark = resolvedBookmark.toDomain()
                 bookmarkDao.update(bookmark.toEntity())
                 NetworkResult.Success(bookmark)
             } else {
