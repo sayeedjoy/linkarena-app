@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sayeedjoy.linkarena.domain.model.Group
 
@@ -40,19 +39,19 @@ fun GroupChip(
     } ?: MaterialTheme.colorScheme.primary
     val isLightChip = chipColor.luminance() > 0.5f
     val selectedContainerColor = chipColor
-    val unselectedContainerColor = chipColor.copy(alpha = 0.18f)
-    val selectedContentColor = if (isLightChip) Color(0xFF111111) else Color.White
-    val unselectedContentColor = chipColor
+    val unselectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+    val selectedContentColor = MaterialTheme.colorScheme.onPrimary
+    val unselectedContentColor = MaterialTheme.colorScheme.onSurface
 
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(percent = 50),
-        color = if (isSelected) selectedContainerColor else unselectedContainerColor,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else unselectedContainerColor,
         modifier = modifier
     ) {
         Text(
             text = group.name,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.labelMedium,
             color = if (isSelected) selectedContentColor else unselectedContentColor,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
         )

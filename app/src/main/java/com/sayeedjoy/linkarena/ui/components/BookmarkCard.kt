@@ -24,7 +24,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,9 +69,9 @@ fun BookmarkCard(
             .fillMaxWidth()
             .clip(cardShape)
             .clickable(onClick = onClick),
-        shape = cardShape, // matched rounded-3xl
+        shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerHighest)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerLow)
     ) {
         Column(
             modifier = Modifier
@@ -88,7 +87,7 @@ fun BookmarkCard(
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(color = colorScheme.surfaceContainerLow, shape = RoundedCornerShape(12.dp)),
+                        .background(color = colorScheme.surfaceContainerLowest, shape = RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     val faviconCandidates = remember(bookmark.faviconUrl, bookmark.url) {
@@ -232,7 +231,7 @@ fun BookmarkCard(
                                 )
                             }
                         )
-                        HorizontalDivider(color = colorScheme.outlineVariant)
+                        // Removed HorizontalDivider to strictly follow DESIGN.md no-divider rule
                         DropdownMenuItem(
                             text = {
                                 Text(
