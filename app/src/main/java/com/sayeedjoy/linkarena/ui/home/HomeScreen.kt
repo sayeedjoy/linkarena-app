@@ -64,6 +64,7 @@ import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.ErrorMessage
 import com.sayeedjoy.linkarena.ui.components.GroupChip
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
+import com.sayeedjoy.linkarena.ui.components.MoveToGroupSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.seconds
@@ -85,6 +86,7 @@ fun HomeScreen(
     var selectedBookmarkIds by remember { mutableStateOf(setOf<String>()) }
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
     var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
+    var bookmarkPendingMove by remember { mutableStateOf<Bookmark?>(null) }
     val bookmarkListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val topBarColor = MaterialTheme.colorScheme.background
@@ -161,6 +163,24 @@ fun HomeScreen(
                 TextButton(onClick = { bookmarkPendingDelete = null }) {
                     Text("Cancel")
                 }
+            }
+        )
+    }
+
+    // Move to group bottom sheet
+    bookmarkPendingMove?.let { bookmark ->
+        MoveToGroupSheet(
+            groups = uiState.groups,
+            currentGroupId = bookmark.groupId,
+            onDismiss = { bookmarkPendingMove = null },
+            onMoveToGroup = { groupId ->
+                val actualGroupId = groupId.ifBlank { null }
+                viewModel.moveBookmarkToGroup(bookmark.id, actualGroupId)
+                bookmarkPendingMove = null
+            },
+            onCreateAndMove = { name, color ->
+                viewModel.createGroupAndMoveBookmark(bookmark.id, name, color)
+                bookmarkPendingMove = null
             }
         )
     }
@@ -389,6 +409,12 @@ fun HomeScreen(
                                                 }
                                             }
                                         },
+                                        onLongClick = {
+                                            if (!isSelectionMode) {
+                                                isSelectionMode = true
+                                                selectedBookmarkIds = setOf(bookmark.id)
+                                            }
+                                        },
                                         onRefetch = { viewModel.refetchBookmark(bookmark.id) },
                                         onFaviconResolved = { resolvedFaviconUrl ->
                                             viewModel.cacheBookmarkFavicon(
@@ -397,6 +423,9 @@ fun HomeScreen(
                                             )
                                         },
                                         onGroupSelect = {
+                                            bookmarkPendingMove = bookmark
+                                        },
+                                        onSelect = {
                                             isSelectionMode = true
                                             selectedBookmarkIds = setOf(bookmark.id)
                                         },

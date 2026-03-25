@@ -10,6 +10,7 @@ import com.sayeedjoy.linkarena.domain.usecase.bookmarks.GetBookmarksUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.MoveBookmarkToGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.RefetchBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.SyncBookmarksUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.CreateGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
@@ -44,7 +45,8 @@ class HomeViewModel @Inject constructor(
     private val cacheBookmarkFaviconUseCase: CacheBookmarkFaviconUseCase,
     private val syncBookmarksUseCase: SyncBookmarksUseCase,
     private val getGroupsUseCase: GetGroupsUseCase,
-    private val syncGroupsUseCase: SyncGroupsUseCase
+    private val syncGroupsUseCase: SyncGroupsUseCase,
+    private val createGroupUseCase: CreateGroupUseCase
 ) : ViewModel() {
     private companion object {
         val MIN_AUTO_REVALIDATE_GAP_MS = 10.seconds.inWholeMilliseconds
@@ -154,6 +156,21 @@ class HomeViewModel @Inject constructor(
     fun cacheBookmarkFavicon(bookmarkId: String, faviconUrl: String) {
         viewModelScope.launch {
             cacheBookmarkFaviconUseCase(bookmarkId, faviconUrl)
+        }
+    }
+
+    fun createGroupAndMoveBookmark(bookmarkId: String, groupName: String, groupColor: String?) {
+        viewModelScope.launch {
+            when (val result = createGroupUseCase(groupName, groupColor)) {
+                is NetworkResult.Success -> {
+                    val newGroup = result.data
+                    moveBookmarkToGroup(bookmarkId, newGroup.id)
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message)
+                }
+                else -> {}
+            }
         }
     }
 

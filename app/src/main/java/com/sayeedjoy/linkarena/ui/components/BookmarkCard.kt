@@ -1,7 +1,8 @@
 package com.sayeedjoy.linkarena.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,11 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.rounded.DriveFileMove
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -38,18 +40,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookmarkCard(
     bookmark: Bookmark,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     onRefetch: () -> Unit,
     onFaviconResolved: (String) -> Unit,
     onGroupSelect: () -> Unit,
+    onSelect: () -> Unit = {},
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     isSelectionMode: Boolean = false,
@@ -68,7 +75,10 @@ fun BookmarkCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(cardShape)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceContainerLow)
@@ -184,13 +194,20 @@ fun BookmarkCard(
                     DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false },
-                        shape = RoundedCornerShape(12.dp),
-                        tonalElevation = 0.dp,
-                        shadowElevation = 0.dp,
-                        containerColor = colorScheme.surface
+                        shape = RoundedCornerShape(16.dp),
+                        tonalElevation = 2.dp,
+                        shadowElevation = 4.dp,
+                        containerColor = colorScheme.surfaceContainerHigh,
+                        offset = DpOffset(x = 0.dp, y = 4.dp)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Refetch", style = MaterialTheme.typography.bodyMedium) },
+                            text = {
+                                Text(
+                                    "Refetch",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
                             onClick = {
                                 showMenu = false
                                 onRefetch()
@@ -199,26 +216,40 @@ fun BookmarkCard(
                                 Icon(
                                     imageVector = Icons.Default.Refresh,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Move to group", style = MaterialTheme.typography.bodyMedium) },
+                            text = {
+                                Text(
+                                    "Move to group",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
                             onClick = {
                                 showMenu = false
                                 onGroupSelect()
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.DriveFileMove,
+                                    imageVector = Icons.Rounded.DriveFileMove,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Edit", style = MaterialTheme.typography.bodyMedium) },
+                            text = {
+                                Text(
+                                    "Edit",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
                             onClick = {
                                 showMenu = false
                                 onEdit()
@@ -227,16 +258,38 @@ fun BookmarkCard(
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         )
-                        // Removed HorizontalDivider to strictly follow DESIGN.md no-divider rule
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    "Select",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                onSelect()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CheckBox,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        )
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     "Delete",
                                     style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.error
                                 )
                             },
@@ -248,7 +301,8 @@ fun BookmarkCard(
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         )
