@@ -24,6 +24,7 @@ class PreferencesManager @Inject constructor(
         val USER_ID = stringPreferencesKey("user_id")
         val USER_EMAIL = stringPreferencesKey("user_email")
         val USER_NAME = stringPreferencesKey("user_name")
+        val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
         val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
@@ -41,6 +42,10 @@ class PreferencesManager @Inject constructor(
 
     val userName: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_NAME]
+    }
+
+    val userPhotoUrl: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.USER_PHOTO_URL]
     }
 
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -66,7 +71,7 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    suspend fun saveUser(id: String, email: String, name: String?) {
+    suspend fun saveUser(id: String, email: String, name: String?, photoUrl: String? = null) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ID] = id
             preferences[PreferencesKeys.USER_EMAIL] = email
@@ -74,6 +79,11 @@ class PreferencesManager @Inject constructor(
                 preferences.remove(PreferencesKeys.USER_NAME)
             } else {
                 preferences[PreferencesKeys.USER_NAME] = name
+            }
+            if (photoUrl.isNullOrBlank()) {
+                preferences.remove(PreferencesKeys.USER_PHOTO_URL)
+            } else {
+                preferences[PreferencesKeys.USER_PHOTO_URL] = photoUrl
             }
         }
     }
@@ -84,6 +94,7 @@ class PreferencesManager @Inject constructor(
             preferences.remove(PreferencesKeys.USER_ID)
             preferences.remove(PreferencesKeys.USER_EMAIL)
             preferences.remove(PreferencesKeys.USER_NAME)
+            preferences.remove(PreferencesKeys.USER_PHOTO_URL)
         }
     }
 

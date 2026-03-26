@@ -21,6 +21,8 @@ class AuthRepositoryImpl @Inject constructor(
     override val isLoggedIn: Flow<Boolean> = preferencesManager.isLoggedIn
     override val userEmail: Flow<String?> = preferencesManager.userEmail
     override val userName: Flow<String?> = preferencesManager.userName
+    override val userPhotoUrl: Flow<String?> = preferencesManager.userPhotoUrl
+
 
     override suspend fun signIn(email: String, password: String): NetworkResult<Unit> {
         return try {
@@ -34,7 +36,9 @@ class AuthRepositoryImpl @Inject constructor(
                 preferencesManager.saveUser(
                     id = user?.id ?: email,
                     email = user?.email?.ifBlank { email } ?: email,
-                    name = user?.name
+                    name = user?.name,
+                    photoUrl = user?.photoUrl
+
                 )
                 NetworkResult.Success(Unit)
             } else {
@@ -55,7 +59,8 @@ class AuthRepositoryImpl @Inject constructor(
                 preferencesManager.saveUser(
                     id = user?.id ?: email,
                     email = user?.email?.ifBlank { email } ?: email,
-                    name = user?.name?.ifBlank { name } ?: name
+                    name = user?.name?.ifBlank { name } ?: name,
+                    photoUrl = user?.photoUrl
                 )
                 NetworkResult.Success(Unit)
             } else {
@@ -101,7 +106,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.getSession()
             if (response.isSuccessful && response.body()?.user != null) {
                 val user = response.body()!!.user!!
-                preferencesManager.saveUser(user.id, user.email, user.name)
+                preferencesManager.saveUser(user.id, user.email, user.name, user.photoUrl)
                 NetworkResult.Success(Unit)
             } else {
                 NetworkResult.Error(response.body()?.error ?: "Session invalid")

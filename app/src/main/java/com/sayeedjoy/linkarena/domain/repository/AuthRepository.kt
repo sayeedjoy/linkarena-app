@@ -7,6 +7,7 @@ interface AuthRepository {
     val isLoggedIn: Flow<Boolean>
     val userEmail: Flow<String?>
     val userName: Flow<String?>
+    val userPhotoUrl: Flow<String?>
 
     suspend fun signIn(email: String, password: String): NetworkResult<Unit>
     suspend fun signUp(email: String, password: String, name: String): NetworkResult<Unit>

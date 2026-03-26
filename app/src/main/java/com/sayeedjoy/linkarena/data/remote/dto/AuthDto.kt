@@ -26,7 +26,8 @@ data class AuthResponse(
 data class UserDto(
     val id: String = "",
     val email: String = "",
-    val name: String?
+    val name: String?,
+    val photoUrl: String? = null
 )
 
 @Serializable

@@ -17,6 +17,7 @@ import javax.inject.Inject
 data class SettingsUiState(
     val userEmail: String? = null,
     val userName: String? = null,
+    val userPhotoUrl: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isLoading: Boolean = false
 )
@@ -32,23 +33,25 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
-        observeUser()
+        observeSettings()
     }
 
-    private fun observeUser() {
+    private fun observeSettings() {
         viewModelScope.launch {
             combine(
                 authRepository.userEmail,
                 authRepository.userName,
+                authRepository.userPhotoUrl,
                 themePreferencesRepository.themeMode
-            ) { email, name, themeMode ->
-                Triple(email, name, themeMode)
-            }.collect { (email, name, themeMode) ->
-                _uiState.value = _uiState.value.copy(
+            ) { email, name, photoUrl, themeMode ->
+                SettingsUiState(
                     userEmail = email,
                     userName = name,
+                    userPhotoUrl = photoUrl,
                     themeMode = themeMode
                 )
+            }.collect { newState ->
+                _uiState.value = newState
             }
         }
     }
