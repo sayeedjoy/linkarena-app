@@ -17,6 +17,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -149,7 +153,9 @@ fun MainNavGraph(
                         nullable = true
                         defaultValue = null
                     }
-                )
+                ),
+                enterTransition = { fadeIn(animationSpec = tween(0)) },
+                exitTransition = { fadeOut(animationSpec = tween(0)) }
             ) { backStackEntry ->
                 val sharedUrlArg = backStackEntry.arguments?.getString(Screen.AddBookmark.ARG_SHARED_URL)
                 AddBookmarkScreen(

@@ -3,12 +3,14 @@ package com.sayeedjoy.linkarena.data.repository
 import com.sayeedjoy.linkarena.data.local.datastore.PreferencesManager
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
 import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
+import com.sayeedjoy.linkarena.data.remote.dto.MessageResponse
 import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SignInRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SignUpRequest
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
+import retrofit2.Response
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -70,7 +72,7 @@ class AuthRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 NetworkResult.Success(response.body()?.message ?: "Reset email sent")
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Request failed")
+                NetworkResult.Error(response.resolveErrorMessage("Request failed"))
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")
@@ -83,7 +85,7 @@ class AuthRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Reset failed")
+                NetworkResult.Error(response.resolveErrorMessage("Reset failed"))
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")
@@ -107,5 +109,15 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")
         }
+    }
+
+    private fun Response<MessageResponse>.resolveErrorMessage(fallback: String): String {
+        val apiError = body()?.error?.takeIf { it.isNotBlank() }
+        if (apiError != null) return apiError
+
+        val rawError = errorBody()?.string()?.trim().orEmpty().take(400)
+        if (rawError.isBlank()) return fallback
+
+        return if (rawError.contains('<') && rawError.contains('>')) fallback else rawError
     }
 }

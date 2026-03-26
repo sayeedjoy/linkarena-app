@@ -40,10 +40,10 @@ interface LinkArenaApi {
     @GET("api/auth/session")
     suspend fun getSession(): Response<SessionResponse>
 
-    @POST("api/auth/forgot-password")
+    @POST("api/mobile/auth/forgot-password")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<MessageResponse>
 
-    @POST("api/auth/reset-password")
+    @POST("api/mobile/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<MessageResponse>
 
     // Sync

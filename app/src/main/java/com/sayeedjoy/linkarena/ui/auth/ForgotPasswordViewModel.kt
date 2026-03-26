@@ -31,10 +31,19 @@ class ForgotPasswordViewModel @Inject constructor(
     }
 
     fun sendResetEmail() {
+        val email = _uiState.value.email.trim()
+        if (!isValidEmail(email)) {
+            _uiState.value = _uiState.value.copy(
+                error = "Please enter a valid email address",
+                isLoading = false
+            )
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            when (val result = authRepository.forgotPassword(_uiState.value.email)) {
+            when (val result = authRepository.forgotPassword(email)) {
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                 }
@@ -46,5 +55,10 @@ class ForgotPasswordViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
+        return email.isNotBlank() && emailRegex.matches(email)
     }
 }
