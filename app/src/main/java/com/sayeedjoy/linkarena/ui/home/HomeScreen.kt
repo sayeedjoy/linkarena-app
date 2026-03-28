@@ -232,26 +232,6 @@ fun HomeScreen(
                                 contentDescription = "Close selection"
                             )
                         }
-                    } else {
-                        androidx.compose.foundation.layout.Box(
-                            modifier = Modifier
-                                .padding(end = 16.dp, start = 8.dp)
-                                .size(40.dp)
-                                .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .border(
-                                    2.dp,
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                                    androidx.compose.foundation.shape.CircleShape
-                                ),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
                 }
             )

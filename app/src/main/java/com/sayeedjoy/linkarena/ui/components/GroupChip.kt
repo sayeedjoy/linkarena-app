@@ -3,7 +3,9 @@ package com.sayeedjoy.linkarena.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -49,12 +51,20 @@ fun GroupChip(
         color = if (isSelected) MaterialTheme.colorScheme.primary else unselectedContainerColor,
         modifier = modifier
     ) {
-        Text(
-            text = group.name,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isSelected) selectedContentColor else unselectedContentColor,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            if (group.color != null) {
+                ColorDot(color = group.color, size = 8)
+            }
+            Text(
+                text = group.name,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (isSelected) selectedContentColor else unselectedContentColor
+            )
+        }
     }
 }
 

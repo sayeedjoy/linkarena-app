@@ -1,8 +1,7 @@
 package com.sayeedjoy.linkarena.ui.navigation
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
@@ -132,7 +131,11 @@ fun MainNavGraph(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -153,9 +156,7 @@ fun MainNavGraph(
                         nullable = true
                         defaultValue = null
                     }
-                ),
-                enterTransition = { fadeIn(animationSpec = tween(0)) },
-                exitTransition = { fadeOut(animationSpec = tween(0)) }
+                )
             ) { backStackEntry ->
                 val sharedUrlArg = backStackEntry.arguments?.getString(Screen.AddBookmark.ARG_SHARED_URL)
                 AddBookmarkScreen(
