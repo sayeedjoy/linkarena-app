@@ -49,7 +49,7 @@ class PreferencesManager @Inject constructor(
     }
 
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.AUTH_TOKEN] != null || preferences[PreferencesKeys.USER_ID] != null
+        preferences[PreferencesKeys.AUTH_TOKEN] != null
     }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data.map { preferences ->

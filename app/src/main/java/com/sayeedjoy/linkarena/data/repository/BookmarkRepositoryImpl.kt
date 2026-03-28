@@ -1,5 +1,6 @@
 package com.sayeedjoy.linkarena.data.repository
 
+import com.sayeedjoy.linkarena.data.local.datastore.PreferencesManager
 import com.sayeedjoy.linkarena.data.local.db.BookmarkDao
 import com.sayeedjoy.linkarena.data.local.db.GroupDao
 import com.sayeedjoy.linkarena.data.local.db.entity.BookmarkEntity
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class BookmarkRepositoryImpl @Inject constructor(
     private val api: LinkArenaApi,
     private val bookmarkDao: BookmarkDao,
-    private val groupDao: GroupDao
+    private val groupDao: GroupDao,
+    private val preferencesManager: PreferencesManager
 ) : BookmarkRepository {
 
     override fun getBookmarks(): Flow<List<Bookmark>> {
@@ -117,6 +119,10 @@ class BookmarkRepositoryImpl @Inject constructor(
         return try {
             val initialResponse = api.sync(mode = "initial")
             if (!initialResponse.isSuccessful) {
+                if (initialResponse.code() == 401) {
+                    preferencesManager.clearSession()
+                    return NetworkResult.Error("Authentication expired. Please sign in again.")
+                }
                 val serverMessage = initialResponse.errorBody()?.string()?.take(400)
                 val message = buildString {
                     append("Sync failed (HTTP ")
@@ -147,6 +153,10 @@ class BookmarkRepositoryImpl @Inject constructor(
                     hasMore = page.hasMore
                     cursor = page.nextCursor
                 } else {
+                    if (pageResponse.code() == 401) {
+                        preferencesManager.clearSession()
+                        return NetworkResult.Error("Authentication expired. Please sign in again.")
+                    }
                     break
                 }
             }

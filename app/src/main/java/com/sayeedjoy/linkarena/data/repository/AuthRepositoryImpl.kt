@@ -26,7 +26,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun signIn(email: String, password: String): NetworkResult<Unit> {
         return try {
-            preferencesManager.clearAuthToken()
+            preferencesManager.clearSession()
 
             val response = api.signIn(SignInRequest(email = email, password = password))
             if (response.isSuccessful && response.body()?.token != null) {
