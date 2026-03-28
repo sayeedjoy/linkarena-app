@@ -2,14 +2,12 @@ package com.sayeedjoy.linkarena.ui.home
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -65,12 +61,13 @@ import com.sayeedjoy.linkarena.ui.components.GroupChip
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.components.MoveToGroupSheet
+import com.sayeedjoy.linkarena.ui.components.OpenLinkDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.seconds
 
 /** Describes the type of content to show — transitions only fire on enum changes, not data updates. */
-private enum class ContentState { Loading, Error, Empty, Content }
+private enum class ContentState { Initializing, Loading, Error, Empty, Content }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +84,7 @@ fun HomeScreen(
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
     var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
     var bookmarkPendingMove by remember { mutableStateOf<Bookmark?>(null) }
+    var bookmarkPendingOpen by remember { mutableStateOf<Bookmark?>(null) }
     val bookmarkListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val topBarColor = MaterialTheme.colorScheme.background
@@ -95,6 +93,7 @@ fun HomeScreen(
     val contentState by remember {
         derivedStateOf {
             when {
+                !uiState.isInitialized -> ContentState.Initializing
                 uiState.bookmarks.isNotEmpty() -> ContentState.Content
                 uiState.isLoading -> ContentState.Loading
                 uiState.error != null -> ContentState.Error
@@ -164,6 +163,19 @@ fun HomeScreen(
                     Text("Cancel")
                 }
             }
+        )
+    }
+
+    bookmarkPendingOpen?.let { bookmark ->
+        OpenLinkDialog(
+            url = bookmark.url ?: "",
+            title = bookmark.title,
+            faviconUrl = bookmark.faviconUrl,
+            onConfirm = {
+                openBookmarkInBrowser(context, bookmark.url)
+                bookmarkPendingOpen = null
+            },
+            onDismiss = { bookmarkPendingOpen = null }
         )
     }
 
@@ -374,17 +386,7 @@ fun HomeScreen(
                                                     isSelectionMode = false
                                                 }
                                             } else {
-                                                val isOpened = openBookmarkInBrowser(
-                                                    context = context,
-                                                    url = bookmark.url
-                                                )
-                                                if (!isOpened) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Invalid link",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
+                                                bookmarkPendingOpen = bookmark
                                             }
                                         },
                                         onLongClick = {
@@ -415,6 +417,9 @@ fun HomeScreen(
                                 }
                             }
                         }
+                    }
+                    ContentState.Initializing -> {
+                        androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize())
                     }
                     ContentState.Loading -> {
                         LoadingIndicator(modifier = Modifier.fillMaxSize())

@@ -15,6 +15,7 @@ import com.sayeedjoy.linkarena.domain.usecase.groups.GetGroupsUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,7 @@ data class HomeUiState(
     val groups: List<Group> = emptyList(),
     val selectedGroupId: String? = null,
     val searchQuery: String = "",
+    val isInitialized: Boolean = false,
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -61,14 +63,11 @@ class HomeViewModel @Inject constructor(
     private var lastSyncAttemptAtMs: Long = 0L
 
     init {
-        loadData()
         observeBookmarks()
         observeGroups()
-    }
-
-    private fun loadData() {
         viewModelScope.launch {
-            syncData(showLoading = true, showRefreshing = false, force = true)
+            delay(2.seconds)
+            syncData(showLoading = false, showRefreshing = false, force = true)
         }
     }
 
@@ -84,7 +83,7 @@ class HomeViewModel @Inject constructor(
                 }
 
                 bookmarksFlow.collect { bookmarks ->
-                    _uiState.value = _uiState.value.copy(bookmarks = bookmarks)
+                    _uiState.value = _uiState.value.copy(bookmarks = bookmarks, isInitialized = true)
                 }
             }
         }

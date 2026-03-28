@@ -54,6 +54,7 @@ import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.components.MoveToGroupSheet
+import com.sayeedjoy.linkarena.ui.components.OpenLinkDialog
 
 private val colorOptions = listOf(
     "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
@@ -73,7 +74,21 @@ fun GroupDetailScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var bookmarkPendingDelete by remember { mutableStateOf<Bookmark?>(null) }
     var bookmarkPendingMove by remember { mutableStateOf<Bookmark?>(null) }
+    var bookmarkPendingOpen by remember { mutableStateOf<Bookmark?>(null) }
     val moveSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    bookmarkPendingOpen?.let { bookmark ->
+        OpenLinkDialog(
+            url = bookmark.url ?: "",
+            title = bookmark.title,
+            faviconUrl = bookmark.faviconUrl,
+            onConfirm = {
+                openBookmarkInBrowser(context, bookmark.url)
+                bookmarkPendingOpen = null
+            },
+            onDismiss = { bookmarkPendingOpen = null }
+        )
+    }
 
     if (showEditDialog && uiState.group != null) {
         EditGroupNameColorDialog(
@@ -191,7 +206,7 @@ fun GroupDetailScreen(
                         BookmarkCard(
                             bookmark = bookmark,
                             onClick = {
-                                openBookmarkInBrowser(context, bookmark.url)
+                                bookmarkPendingOpen = bookmark
                             },
                             onLongClick = { },
                             onRefetch = { viewModel.refetchBookmark(bookmark.id) },
