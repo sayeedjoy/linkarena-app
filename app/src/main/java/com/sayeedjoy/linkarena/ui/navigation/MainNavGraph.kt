@@ -187,6 +187,12 @@ fun MainNavGraph(
                 )
             }
 
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    onLogout = onLogout
+                )
+            }
+
             composable(
                 route = Screen.GroupDetail.route,
                 arguments = listOf(
@@ -202,15 +208,6 @@ fun MainNavGraph(
                     onNavigateToBookmarkDetail = { bookmarkId ->
                         navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
                     }
-                )
-            }
-
-            composable(Screen.Settings.route) {
-                SettingsScreen(
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    },
-                    onLogout = onLogout
                 )
             }
         }

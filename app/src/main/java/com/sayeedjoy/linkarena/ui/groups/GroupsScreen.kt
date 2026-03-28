@@ -87,8 +87,19 @@ fun GroupsScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             LinkArenaTopBar(
-                title = "Collections",
-                containerColor = MaterialTheme.colorScheme.background
+                title = {
+                    Text(
+                        text = "Collections",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+                },
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent,
+                navigationIconContentColor = MaterialTheme.colorScheme.primary
             )
         },
         floatingActionButton = {
@@ -281,6 +292,15 @@ private fun GroupItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val groupColor = group.color.asGroupColorOrFallback(MaterialTheme.colorScheme.primary)
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(groupColor, CircleShape)
+            )
+
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(12.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = group.name,
@@ -301,5 +321,14 @@ private fun GroupItem(
                 tint = MaterialTheme.colorScheme.outlineVariant
             )
         }
+    }
+}
+
+private fun String?.asGroupColorOrFallback(fallback: Color): Color {
+    if (this.isNullOrBlank()) return fallback
+    return try {
+        Color(android.graphics.Color.parseColor(this))
+    } catch (_: Exception) {
+        fallback
     }
 }

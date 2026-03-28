@@ -77,6 +77,12 @@ fun SignupScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        )
+
         // Asymmetric Blur Background
         Box(
             modifier = Modifier
@@ -344,7 +350,7 @@ fun SignupScreen(
                         text = "Create Account",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
 

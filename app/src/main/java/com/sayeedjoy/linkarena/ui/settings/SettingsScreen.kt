@@ -23,13 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -68,7 +64,6 @@ import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit,
     onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -92,8 +87,8 @@ fun SettingsScreen(
         packageInfo?.versionCode?.toLong() ?: 0L
     }
 
-    val displayEmail = uiState.userEmail?.takeIf { it.isNotBlank() } ?: "thesayeedjoy@gmail.com"
-    val displayName = uiState.userName?.takeIf { it.isNotBlank() } ?: "Sayeed Joy"
+    val displayEmail = uiState.userEmail?.takeIf { it.isNotBlank() } ?: "fallback@email.com"
+    val displayName = uiState.userName?.takeIf { it.isNotBlank() } ?: "FallBack Name"
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -119,21 +114,19 @@ fun SettingsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface,
+    Scaffold(containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             LinkArenaTopBar(
                 title = {
                     Text(
                         text = "Settings",
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                             letterSpacing = (-0.5).sp
                         )
                     )
                 },
-                onNavigationClick = onNavigateBack,
                 containerColor = Color.Transparent,
                 scrolledContainerColor = Color.Transparent,
                 navigationIconContentColor = MaterialTheme.colorScheme.primary
@@ -207,26 +200,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Account Settings Section
-            SectionHeader("ACCOUNT SETTINGS")
-            Spacer(modifier = Modifier.height(12.dp))
-
-            SettingsCard(
-                icon = Icons.Default.Person,
-                title = "Personal Information",
-                subtitle = "Update your name and email",
-                onClick = { /* Navigate */ }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            SettingsCard(
-                icon = Icons.Default.Shield,
-                title = "Security",
-                subtitle = "Manage password and 2FA",
-                onClick = { /* Navigate */ }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             // Theme Section
             SectionHeader("THEME")
             Spacer(modifier = Modifier.height(16.dp))
@@ -289,60 +262,6 @@ private fun SectionHeader(text: String) {
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Start
     )
-}
-
-@Composable
-private fun SettingsCard(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
 }
 
 @Composable

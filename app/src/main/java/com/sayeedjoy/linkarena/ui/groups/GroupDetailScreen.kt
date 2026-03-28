@@ -132,47 +132,20 @@ fun GroupDetailScreen(
             LinkArenaTopBar(
                 title = {
                     uiState.group?.let { group ->
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                val groupColor = group.color?.let { colorString ->
-                                    try {
-                                        Color(android.graphics.Color.parseColor(colorString))
-                                    } catch (e: Exception) {
-                                        MaterialTheme.colorScheme.primary
-                                    }
-                                } ?: MaterialTheme.colorScheme.outlineVariant
-
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(groupColor.copy(alpha = 0.15f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = group.name.firstOrNull()?.uppercase() ?: "?",
-                                        color = groupColor,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Text(
-                                    text = group.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val groupColor = group.color.asGroupColorOrFallback(MaterialTheme.colorScheme.primary)
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(groupColor)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "${uiState.bookmarks.size} bookmark${if (uiState.bookmarks.size != 1) "s" else ""}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 44.dp)
+                                text = group.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
                             )
                         }
                     } ?: Text("Group")
@@ -234,6 +207,15 @@ fun GroupDetailScreen(
                 }
             }
         }
+    }
+}
+
+private fun String?.asGroupColorOrFallback(fallback: Color): Color {
+    if (this.isNullOrBlank()) return fallback
+    return try {
+        Color(android.graphics.Color.parseColor(this))
+    } catch (_: Exception) {
+        fallback
     }
 }
 
