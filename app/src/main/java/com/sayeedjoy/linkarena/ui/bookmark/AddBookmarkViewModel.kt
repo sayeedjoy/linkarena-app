@@ -21,6 +21,7 @@ data class AddBookmarkUiState(
     val url: String = "",
     val title: String = "",
     val description: String = "",
+    val faviconUrl: String? = null,
     val selectedGroupId: String? = null,
     val groups: List<Group> = emptyList(),
     val isFetchingMetadata: Boolean = false,
@@ -62,13 +63,13 @@ class AddBookmarkViewModel @Inject constructor(
     }
 
     fun onUrlChange(url: String) {
-        _uiState.value = _uiState.value.copy(url = url, error = null)
+        _uiState.value = _uiState.value.copy(url = url, faviconUrl = null, error = null)
         scheduleAutoMetadataFetch(url)
     }
 
     fun prefillUrlIfEmpty(url: String) {
         if (_uiState.value.url.isBlank()) {
-            _uiState.value = _uiState.value.copy(url = url.trim(), error = null)
+            _uiState.value = _uiState.value.copy(url = url.trim(), faviconUrl = null, error = null)
             scheduleAutoMetadataFetch(url)
         }
     }
@@ -136,6 +137,7 @@ class AddBookmarkViewModel @Inject constructor(
                         url = metadata.normalizedUrl,
                         title = latest.title.ifBlank { metadata.title.orEmpty() },
                         description = latest.description.ifBlank { metadata.description.orEmpty() },
+                        faviconUrl = metadata.faviconUrl,
                         isFetchingMetadata = false
                     )
                 }

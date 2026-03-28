@@ -38,7 +38,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -63,6 +62,7 @@ import com.sayeedjoy.linkarena.ui.components.BookmarkCard
 import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.ErrorMessage
 import com.sayeedjoy.linkarena.ui.components.GroupChip
+import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.components.MoveToGroupSheet
 import kotlinx.coroutines.delay
@@ -190,7 +190,7 @@ fun HomeScreen(
         containerColor = topBarColor,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
+            LinkArenaTopBar(
                 title = {
                     if (isSelectionMode) {
                         Text("${selectedBookmarkIds.size} selected")
@@ -203,10 +203,8 @@ fun HomeScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = topBarColor,
-                    scrolledContainerColor = topBarColor
-                ),
+                containerColor = topBarColor,
+                scrolledContainerColor = topBarColor,
                 scrollBehavior = scrollBehavior,
                 actions = {
                     if (isSelectionMode) {

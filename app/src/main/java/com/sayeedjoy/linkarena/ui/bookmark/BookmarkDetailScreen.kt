@@ -1,8 +1,5 @@
 package com.sayeedjoy.linkarena.ui.bookmark
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +21,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
@@ -40,8 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sayeedjoy.linkarena.ui.components.ColorDot
+import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +68,6 @@ fun BookmarkDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
-    val topBarColor = MaterialTheme.colorScheme.background
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var groupDropdownExpanded by remember { mutableStateOf(false) }
@@ -119,16 +113,9 @@ fun BookmarkDetailScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
+            LinkArenaTopBar(
                 title = { Text("Edit Artifact") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
+                onNavigationClick = onNavigateBack,
                 actions = {
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
@@ -138,10 +125,8 @@ fun BookmarkDetailScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = topBarColor,
-                    scrolledContainerColor = topBarColor
-                )
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.background
             )
         },
         bottomBar = {

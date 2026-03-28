@@ -25,23 +25,18 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,17 +48,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.sayeedjoy.linkarena.ui.components.ColorDot
+import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +94,7 @@ fun AddBookmarkScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
+            LinkArenaTopBar(
                 title = {
                     Column {
                         Text(
@@ -112,19 +110,10 @@ fun AddBookmarkScreen(
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                onNavigationClick = onNavigateBack,
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                titleContentColor = MaterialTheme.colorScheme.onSurface
             )
         },
         bottomBar = {
@@ -359,17 +348,47 @@ fun AddBookmarkScreen(
                             .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = uiState.url
-                                .removePrefix("https://")
-                                .removePrefix("http://")
-                                .removePrefix("www.")
-                                .take(1)
-                                .uppercase(),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        val faviconCandidates = remember(uiState.faviconUrl, uiState.url) {
+                            val domain = uiState.url.extractDomain()
+                            buildList {
+                                uiState.faviconUrl
+                                    ?.resolveAgainstUrl(uiState.url)
+                                    ?.let { add(it) }
+                                domain?.let { add("https://www.google.com/s2/favicons?domain=$it&sz=64") }
+                                domain?.let { add("https://icons.duckduckgo.com/ip3/$it.ico") }
+                            }.distinct()
+                        }
+                        var faviconIndex by remember(uiState.url, uiState.faviconUrl) { mutableStateOf(0) }
+                        val iconUrl = faviconCandidates.getOrNull(faviconIndex)
+
+                        if (iconUrl != null) {
+                            AsyncImage(
+                                model = iconUrl,
+                                contentDescription = "Favicon",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop,
+                                filterQuality = FilterQuality.High,
+                                onError = {
+                                    if (faviconIndex < faviconCandidates.lastIndex) {
+                                        faviconIndex += 1
+                                    }
+                                }
+                            )
+                        } else {
+                            Text(
+                                text = uiState.url
+                                    .removePrefix("https://")
+                                    .removePrefix("http://")
+                                    .removePrefix("www.")
+                                    .take(1)
+                                    .uppercase(),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.width(12.dp))
@@ -430,6 +449,26 @@ fun AddBookmarkScreen(
             // Bottom padding to avoid Action Button overlapping
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+private fun String.extractDomain(): String? {
+    return try {
+        val normalized = if (startsWith("http://") || startsWith("https://")) this else "https://$this"
+        java.net.URL(normalized).host
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun String.resolveAgainstUrl(rawUrl: String): String {
+    if (startsWith("http://") || startsWith("https://")) return this
+    if (startsWith("//")) return "https:$this"
+    return try {
+        val base = if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) rawUrl else "https://$rawUrl"
+        java.net.URI(base).resolve(this).toString()
+    } catch (_: Exception) {
+        this
     }
 }
 

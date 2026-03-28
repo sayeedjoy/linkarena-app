@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material3:material3:1.5.0-alpha10")
     implementation(libs.androidx.material.icons.extended)
 
     implementation(libs.materialKolor)

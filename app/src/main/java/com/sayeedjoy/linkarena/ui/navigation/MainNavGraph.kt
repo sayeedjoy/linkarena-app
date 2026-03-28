@@ -1,5 +1,8 @@
 package com.sayeedjoy.linkarena.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
@@ -17,10 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,6 +28,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.sayeedjoy.linkarena.ui.bookmark.AddBookmarkScreen
 import com.sayeedjoy.linkarena.ui.bookmark.BookmarkDetailScreen
+import com.sayeedjoy.linkarena.ui.groups.GroupDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupsScreen
 import com.sayeedjoy.linkarena.ui.home.HomeScreen
 import com.sayeedjoy.linkarena.ui.settings.SettingsScreen
@@ -181,8 +181,26 @@ fun MainNavGraph(
 
             composable(Screen.Groups.route) {
                 GroupsScreen(
+                    onNavigateToGroupDetail = { groupId ->
+                        navController.navigate(Screen.GroupDetail.createRoute(groupId))
+                    }
+                )
+            }
+
+            composable(
+                route = Screen.GroupDetail.route,
+                arguments = listOf(
+                    navArgument(Screen.GroupDetail.ARG_GROUP_ID) {
+                        type = NavType.StringType
+                    }
+                )
+            ) {
+                GroupDetailScreen(
                     onNavigateBack = {
                         navController.popBackStack()
+                    },
+                    onNavigateToBookmarkDetail = { bookmarkId ->
+                        navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
                     }
                 )
             }

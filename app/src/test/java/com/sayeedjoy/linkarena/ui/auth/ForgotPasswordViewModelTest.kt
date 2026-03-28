@@ -76,6 +76,7 @@ class ForgotPasswordViewModelTest {
         override val isLoggedIn: Flow<Boolean> = flowOf(false)
         override val userEmail: Flow<String?> = flowOf(null)
         override val userName: Flow<String?> = flowOf(null)
+        override val userPhotoUrl: Flow<String?> = flowOf(null)
 
         override suspend fun signIn(email: String, password: String): NetworkResult<Unit> {
             return NetworkResult.Success(Unit)

@@ -30,4 +30,8 @@ sealed class Screen(val route: String) {
     }
     data object Groups : Screen("groups")
     data object Settings : Screen("settings")
+    data object GroupDetail : Screen("group_detail/{groupId}") {
+        const val ARG_GROUP_ID = "groupId"
+        fun createRoute(groupId: String) = "group_detail/$groupId"
+    }
 }
