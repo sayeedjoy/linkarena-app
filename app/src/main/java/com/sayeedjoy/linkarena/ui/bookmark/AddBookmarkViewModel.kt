@@ -6,6 +6,7 @@ import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.domain.repository.GroupRepository
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.CreateBookmarkUseCase
 import com.sayeedjoy.linkarena.domain.usecase.bookmarks.FetchUrlMetadataUseCase
+import com.sayeedjoy.linkarena.domain.usecase.groups.CreateGroupUseCase
 import com.sayeedjoy.linkarena.domain.usecase.groups.SyncGroupsUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +26,7 @@ data class AddBookmarkUiState(
     val selectedGroupId: String? = null,
     val groups: List<Group> = emptyList(),
     val isFetchingMetadata: Boolean = false,
+    val isCreatingGroup: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val isSuccess: Boolean = false
@@ -35,6 +37,7 @@ class AddBookmarkViewModel @Inject constructor(
     private val createBookmarkUseCase: CreateBookmarkUseCase,
     private val fetchUrlMetadataUseCase: FetchUrlMetadataUseCase,
     private val groupRepository: GroupRepository,
+    private val createGroupUseCase: CreateGroupUseCase,
     private val syncGroupsUseCase: SyncGroupsUseCase
 ) : ViewModel() {
 
@@ -84,6 +87,31 @@ class AddBookmarkViewModel @Inject constructor(
 
     fun onGroupSelected(groupId: String?) {
         _uiState.value = _uiState.value.copy(selectedGroupId = groupId)
+    }
+
+    fun createGroup(name: String, color: String?) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isCreatingGroup = true, error = null)
+            when (val result = createGroupUseCase(name, color)) {
+                is NetworkResult.Success -> {
+                    val updatedGroups = (_uiState.value.groups + result.data).distinctBy { it.id }
+                    _uiState.value = _uiState.value.copy(
+                        groups = updatedGroups,
+                        selectedGroupId = result.data.id,
+                        isCreatingGroup = false
+                    )
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isCreatingGroup = false,
+                        error = result.message
+                    )
+                }
+                is NetworkResult.Loading -> {
+                    _uiState.value = _uiState.value.copy(isCreatingGroup = true)
+                }
+            }
+        }
     }
 
     fun createBookmark() {

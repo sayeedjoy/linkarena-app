@@ -15,8 +15,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import javax.inject.Inject
 
 class GroupRepositoryImpl @Inject constructor(
@@ -39,12 +43,14 @@ class GroupRepositoryImpl @Inject constructor(
     override suspend fun createGroup(name: String, color: String?): NetworkResult<Group> {
         return try {
             val response = api.createGroup(CreateGroupRequest(name, color))
-            if (response.isSuccessful && response.body()?.group != null) {
-                val group = response.body()!!.group!!.toDomain()
+            val responseBody = response.body()
+            val resolvedGroup = decodeGroup(responseBody)
+            if (response.isSuccessful && resolvedGroup != null) {
+                val group = resolvedGroup
                 groupDao.insert(group.toEntity())
                 NetworkResult.Success(group)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Create failed")
+                NetworkResult.Error(extractErrorMessage(responseBody, "Create failed"))
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")
@@ -54,12 +60,14 @@ class GroupRepositoryImpl @Inject constructor(
     override suspend fun updateGroup(id: String, name: String?, color: String?, order: Int?): NetworkResult<Group> {
         return try {
             val response = api.updateGroup(id, UpdateGroupRequest(name, color, order))
-            if (response.isSuccessful && response.body()?.group != null) {
-                val group = response.body()!!.group!!.toDomain()
+            val responseBody = response.body()
+            val resolvedGroup = decodeGroup(responseBody)
+            if (response.isSuccessful && resolvedGroup != null) {
+                val group = resolvedGroup
                 groupDao.update(group.toEntity())
                 NetworkResult.Success(group)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Update failed")
+                NetworkResult.Error(extractErrorMessage(responseBody, "Update failed"))
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")
@@ -140,4 +148,35 @@ class GroupRepositoryImpl @Inject constructor(
         order = order,
         bookmarkCount = if (bookmarkCount != 0) bookmarkCount else (count?.bookmarks ?: 0)
     )
+
+    private fun decodeGroup(body: JsonElement?): Group? {
+        val root = body as? JsonObject ?: return null
+        val candidates = buildList {
+            root["group"]?.let { add(it) }
+            root["category"]?.let { add(it) }
+            root["data"]?.let { add(it) }
+            if (root["id"] != null && root["name"] != null) {
+                add(root)
+            }
+        }
+
+        return candidates.firstNotNullOfOrNull { element ->
+            runCatching {
+                json.decodeFromJsonElement(GroupDto.serializer(), element).toDomain()
+            }.getOrNull()
+        }
+    }
+
+    private fun extractErrorMessage(body: JsonElement?, fallback: String): String {
+        val root = body as? JsonObject ?: return fallback
+        val direct = root["error"]?.jsonPrimitive?.contentOrNull
+            ?: root["message"]?.jsonPrimitive?.contentOrNull
+        if (!direct.isNullOrBlank()) return direct
+
+        val nestedError = (root["error"] as? JsonObject)
+            ?.get("message")
+            ?.jsonPrimitive
+            ?.contentOrNull
+        return if (!nestedError.isNullOrBlank()) nestedError else fallback
+    }
 }

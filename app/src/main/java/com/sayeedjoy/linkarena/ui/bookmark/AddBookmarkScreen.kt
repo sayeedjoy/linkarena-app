@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
@@ -62,6 +63,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.sayeedjoy.linkarena.ui.components.ColorDot
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
+import com.sayeedjoy.linkarena.ui.groups.CreateGroupDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,10 +77,21 @@ fun AddBookmarkScreen(
     val focusManager = LocalFocusManager.current
 
     var groupDropdownExpanded by remember { mutableStateOf(false) }
+    var showCreateGroupDialog by remember { mutableStateOf(false) }
     val selectedGroupName = uiState.groups
         .firstOrNull { it.id == uiState.selectedGroupId }
         ?.name
         ?: "None"
+
+    if (showCreateGroupDialog) {
+        CreateGroupDialog(
+            onDismiss = { showCreateGroupDialog = false },
+            onCreate = { name, color ->
+                viewModel.createGroup(name, color)
+                showCreateGroupDialog = false
+            }
+        )
+    }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -123,7 +136,10 @@ fun AddBookmarkScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                val isEnabled = uiState.url.isNotBlank() && !uiState.isLoading && !uiState.isFetchingMetadata
+                val isEnabled = uiState.url.isNotBlank() &&
+                    !uiState.isLoading &&
+                    !uiState.isFetchingMetadata &&
+                    !uiState.isCreatingGroup
                 
                 Button(
                     onClick = viewModel::createBookmark,
@@ -252,7 +268,7 @@ fun AddBookmarkScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                            .clickable(enabled = !uiState.isLoading) {
+                            .clickable(enabled = !uiState.isLoading && !uiState.isCreatingGroup) {
                                 groupDropdownExpanded = true
                             }
                             .padding(horizontal = 12.dp, vertical = 10.dp)
@@ -298,6 +314,30 @@ fun AddBookmarkScreen(
                             onClick = {
                                 viewModel.onGroupSelected(null)
                                 groupDropdownExpanded = false
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Create new group",
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            },
+                            onClick = {
+                                groupDropdownExpanded = false
+                                showCreateGroupDialog = true
                             }
                         )
 

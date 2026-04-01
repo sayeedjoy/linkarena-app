@@ -5,7 +5,6 @@ import com.sayeedjoy.linkarena.data.remote.dto.BookmarkResponse
 import com.sayeedjoy.linkarena.data.remote.dto.CreateBookmarkRequest
 import com.sayeedjoy.linkarena.data.remote.dto.CreateGroupRequest
 import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
-import com.sayeedjoy.linkarena.data.remote.dto.GroupResponse
 import com.sayeedjoy.linkarena.data.remote.dto.MessageResponse
 import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SessionResponse
@@ -77,13 +76,13 @@ interface LinkArenaApi {
     suspend fun getGroups(): Response<JsonElement>
 
     @POST("api/groups")
-    suspend fun createGroup(@Body request: CreateGroupRequest): Response<GroupResponse>
+    suspend fun createGroup(@Body request: CreateGroupRequest): Response<JsonElement>
 
     @PATCH("api/groups/{id}")
     suspend fun updateGroup(
         @Path("id") id: String,
         @Body request: UpdateGroupRequest
-    ): Response<GroupResponse>
+    ): Response<JsonElement>
 
     @DELETE("api/groups/{id}")
     suspend fun deleteGroup(@Path("id") id: String): Response<MessageResponse>
