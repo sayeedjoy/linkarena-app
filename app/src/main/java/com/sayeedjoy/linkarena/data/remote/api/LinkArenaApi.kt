@@ -34,7 +34,7 @@ interface LinkArenaApi {
     @POST("api/mobile/auth/login")
     suspend fun signIn(@Body request: SignInRequest): Response<AuthResponse>
 
-    @POST("api/auth/signup")
+    @POST("api/mobile/auth/signup")
     suspend fun signUp(@Body request: SignUpRequest): Response<AuthResponse>
 
     @GET("api/auth/session")

@@ -64,7 +64,13 @@ class AuthRepositoryImpl @Inject constructor(
                 )
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Sign up failed")
+                val errorMsg = response.body()?.error
+                    ?: response.errorBody()?.string()?.let { raw ->
+                        if (raw.isBlank() || (raw.contains('<') && raw.contains('>'))) null
+                        else raw.take(300).trim()
+                    }
+                    ?: "Sign up failed (${response.code()})"
+                NetworkResult.Error(errorMsg)
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")

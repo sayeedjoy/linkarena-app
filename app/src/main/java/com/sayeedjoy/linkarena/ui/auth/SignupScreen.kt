@@ -319,6 +319,16 @@ fun SignupScreen(
                     enabled = !uiState.isLoading
                 )
 
+                if (uiState.confirmPassword.isNotEmpty() && uiState.password != uiState.confirmPassword) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Passwords do not match",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+
                 uiState.error?.let { error ->
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
