@@ -30,6 +30,7 @@ import com.sayeedjoy.linkarena.ui.bookmark.BookmarkDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupsScreen
 import com.sayeedjoy.linkarena.ui.home.HomeScreen
+import com.sayeedjoy.linkarena.ui.settings.About
 import com.sayeedjoy.linkarena.ui.settings.SettingsScreen
 
 @Composable
@@ -190,8 +191,17 @@ fun MainNavGraph(
 
             composable(Screen.Settings.route) {
                 SettingsScreen(
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onNavigateToAbout = {
+                        navController.navigate(Screen.About.route) {
+                            launchSingleTop = true
+                        }
+                    }
                 )
+            }
+
+            composable(Screen.About.route) {
+                About(navController = navController)
             }
 
             composable(

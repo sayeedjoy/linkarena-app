@@ -55,13 +55,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.compose.material.icons.rounded.Info
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
+import com.sayeedjoy.linkarena.ui.components.SettingCategory
+import com.sayeedjoy.linkarena.ui.components.shapeManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onLogout: () -> Unit,
+    onNavigateToAbout: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -199,7 +203,20 @@ fun SettingsScreen(
                 onThemeSelected = { viewModel.onThemeModeChange(it) }
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // About Section
+            SectionHeader("MORE")
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingCategory(
+                title = "About",
+                subTitle = "App info, version, and links",
+                icon = Icons.Rounded.Info,
+                shape = shapeManager(isBoth = true, radius = 16),
+                action = onNavigateToAbout
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Logout & Version info
             OutlinedButton(
