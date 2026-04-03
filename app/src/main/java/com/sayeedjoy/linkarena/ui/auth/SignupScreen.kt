@@ -2,6 +2,7 @@ package com.sayeedjoy.linkarena.ui.auth
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -14,10 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,11 +41,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -69,6 +68,10 @@ fun SignupScreen(
     val focusManager = LocalFocusManager.current
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val screenBackgroundColor = if (isDarkTheme) Color.Black else MaterialTheme.colorScheme.background
+    val inputContainerColor =
+        if (isDarkTheme) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -80,41 +83,17 @@ fun SignupScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        )
-
-        // Asymmetric Blur Background
-        Box(
-            modifier = Modifier
-                .size(400.dp)
-                .align(Alignment.TopStart)
-                .padding(top = 40.dp, start = 20.dp)
-                .blur(120.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
-                    shape = CircleShape
-                )
-        )
-        Box(
-            modifier = Modifier
-                .size(300.dp)
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 60.dp, end = 20.dp)
-                .blur(100.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f),
-                    shape = CircleShape
-                )
+                .background(screenBackgroundColor)
         )
 
         Scaffold(
-            containerColor = Color.Transparent,
+            containerColor = screenBackgroundColor,
             topBar = {
                 LinkArenaTopBar(
                     title = { Text("Create Account", style = MaterialTheme.typography.titleLarge) },
                     onNavigationClick = onNavigateToLogin,
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent,
+                    containerColor = screenBackgroundColor,
+                    scrolledContainerColor = screenBackgroundColor,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
@@ -158,14 +137,19 @@ fun SignupScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = if (isDarkTheme) 1.dp else 0.dp,
+                            color = if (isDarkTheme) Color(0xFF2A2A2A) else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                        focusedContainerColor = inputContainerColor,
+                        unfocusedContainerColor = inputContainerColor,
+                        disabledContainerColor = inputContainerColor,
+                        focusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else Color.Transparent,
+                        unfocusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.5f) else Color.Transparent,
+                        disabledIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) else Color.Transparent
                     ),
                     enabled = !uiState.isLoading
                 )
@@ -200,14 +184,19 @@ fun SignupScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = if (isDarkTheme) 1.dp else 0.dp,
+                            color = if (isDarkTheme) Color(0xFF2A2A2A) else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                        focusedContainerColor = inputContainerColor,
+                        unfocusedContainerColor = inputContainerColor,
+                        disabledContainerColor = inputContainerColor,
+                        focusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else Color.Transparent,
+                        unfocusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.5f) else Color.Transparent,
+                        disabledIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) else Color.Transparent
                     ),
                     enabled = !uiState.isLoading
                 )
@@ -252,14 +241,19 @@ fun SignupScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = if (isDarkTheme) 1.dp else 0.dp,
+                            color = if (isDarkTheme) Color(0xFF2A2A2A) else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                        focusedContainerColor = inputContainerColor,
+                        unfocusedContainerColor = inputContainerColor,
+                        disabledContainerColor = inputContainerColor,
+                        focusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else Color.Transparent,
+                        unfocusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.5f) else Color.Transparent,
+                        disabledIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) else Color.Transparent
                     ),
                     enabled = !uiState.isLoading
                 )
@@ -307,14 +301,19 @@ fun SignupScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = if (isDarkTheme) 1.dp else 0.dp,
+                            color = if (isDarkTheme) Color(0xFF2A2A2A) else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                        focusedContainerColor = inputContainerColor,
+                        unfocusedContainerColor = inputContainerColor,
+                        disabledContainerColor = inputContainerColor,
+                        focusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else Color.Transparent,
+                        unfocusedIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.5f) else Color.Transparent,
+                        disabledIndicatorColor = if (isDarkTheme) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) else Color.Transparent
                     ),
                     enabled = !uiState.isLoading
                 )
