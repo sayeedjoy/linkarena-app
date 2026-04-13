@@ -65,6 +65,9 @@ interface LinkArenaApi {
     @DELETE("api/bookmarks/{id}")
     suspend fun deleteBookmarkById(@Path("id") id: String): Response<MessageResponse>
 
+    @POST("api/bookmarks/{id}/refetch")
+    suspend fun refetchBookmark(@Path("id") id: String): Response<BookmarkResponse>
+
     @PUT("api/bookmarks/{id}/category")
     suspend fun updateBookmarkCategory(
         @Path("id") id: String,

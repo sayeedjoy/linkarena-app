@@ -93,6 +93,22 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun refetchBookmark(bookmarkId: String): NetworkResult<Bookmark> {
+        return try {
+            val response = api.refetchBookmark(bookmarkId)
+            val resolvedBookmark = response.body()?.resolvedBookmark()
+            if (response.isSuccessful && resolvedBookmark != null) {
+                val bookmark = resolvedBookmark.toDomain()
+                bookmarkDao.update(bookmark.toEntity())
+                NetworkResult.Success(bookmark)
+            } else {
+                NetworkResult.Error(response.body()?.error ?: "Refetch failed")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(e.message ?: "Network error")
+        }
+    }
+
     override suspend fun moveBookmarkToGroup(bookmarkId: String, groupId: String?): NetworkResult<Unit> {
         return try {
             val response = api.updateBookmarkCategory(bookmarkId, UpdateBookmarkCategoryRequest(groupId))

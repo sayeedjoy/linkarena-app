@@ -89,6 +89,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // Jsoup (HTML parsing for metadata fetch)
+    implementation(libs.jsoup)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)

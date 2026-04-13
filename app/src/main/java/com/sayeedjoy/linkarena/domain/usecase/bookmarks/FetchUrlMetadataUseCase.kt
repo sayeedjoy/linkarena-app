@@ -6,11 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.jsoup.Jsoup
 import java.net.URI
 import javax.inject.Inject
+import javax.inject.Named
 
 class FetchUrlMetadataUseCase @Inject constructor(
-    private val okHttpClient: OkHttpClient
+    @Named("metadata") private val okHttpClient: OkHttpClient
 ) {
     suspend operator fun invoke(rawUrl: String): NetworkResult<UrlMetadata> = withContext(Dispatchers.IO) {
         val normalizedUrl = normalizeUrl(rawUrl)
@@ -37,12 +39,15 @@ class FetchUrlMetadataUseCase @Inject constructor(
                 }
 
                 val finalUrl = response.request.url.toString()
-                val title = extractMetaContent(body, "property", "og:title")
-                    ?: extractTitle(body)
-                val description = extractMetaContent(body, "property", "og:description")
-                    ?: extractMetaContent(body, "name", "description")
-                val faviconRaw = extractFaviconHref(body)
-                val faviconUrl = faviconRaw?.resolveAgainst(finalUrl)
+                val doc = Jsoup.parse(body, finalUrl)
+
+                val title = doc.select("meta[property=og:title]").attr("content").takeIf { it.isNotBlank() }
+                    ?: doc.title().takeIf { it.isNotBlank() }
+                val description = doc.select("meta[property=og:description]").attr("content").takeIf { it.isNotBlank() }
+                    ?: doc.select("meta[name=description]").attr("content").takeIf { it.isNotBlank() }
+                val faviconUrl = doc.select("link[rel~=(?i)icon]").attr("abs:href").takeIf { it.isNotBlank() }
+                    ?: doc.select("link[rel~=(?i)icon]").attr("href").takeIf { it.isNotBlank() }
+                        ?.resolveAgainst(finalUrl)
 
                 if (title.isNullOrBlank() && description.isNullOrBlank() && faviconUrl.isNullOrBlank()) {
                     NetworkResult.Error("No metadata found")
@@ -76,34 +81,6 @@ class FetchUrlMetadataUseCase @Inject constructor(
         } catch (e: Exception) {
             null
         }
-    }
-
-    private fun extractTitle(html: String): String? {
-        val match = Regex("(?is)<title[^>]*>(.*?)</title>").find(html) ?: return null
-        return match.groupValues.getOrNull(1)
-    }
-
-    private fun extractMetaContent(html: String, attrName: String, attrValue: String): String? {
-        val quotedAttrValue = Regex.escape(attrValue)
-        val attrPattern = "$attrName\\s*=\\s*['\"]$quotedAttrValue['\"]"
-        val contentPattern = "content\\s*=\\s*['\"](.*?)['\"]"
-
-        val regex = Regex("(?is)<meta[^>]*$attrPattern[^>]*$contentPattern[^>]*>")
-        val directMatch = regex.find(html)?.groupValues?.getOrNull(1)
-        if (!directMatch.isNullOrBlank()) return directMatch
-
-        val reverseRegex = Regex("(?is)<meta[^>]*$contentPattern[^>]*$attrPattern[^>]*>")
-        return reverseRegex.find(html)?.groupValues?.getOrNull(1)
-    }
-
-    private fun extractFaviconHref(html: String): String? {
-        val iconRegex = Regex(
-            "(?is)<link[^>]*rel\\s*=\\s*['\"][^'\"]*icon[^'\"]*['\"][^>]*href\\s*=\\s*['\"](.*?)['\"][^>]*>"
-        )
-        val match = iconRegex.find(html)
-            ?: Regex("(?is)<link[^>]*href\\s*=\\s*['\"](.*?)['\"][^>]*rel\\s*=\\s*['\"][^'\"]*icon[^'\"]*['\"][^>]*>")
-                .find(html)
-        return match?.groupValues?.getOrNull(1)
     }
 
     private fun String.cleanText(): String {

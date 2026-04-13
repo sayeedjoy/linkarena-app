@@ -191,6 +191,39 @@ class AddBookmarkViewModel @Inject constructor(
             input.contains('.')
     }
 
+    fun fetchMetadata() {
+        val url = _uiState.value.url.trim()
+        if (!looksFetchableUrlInput(url)) return
+        metadataFetchJob?.cancel()
+        // Reset so re-fetch always runs even if the URL hasn't changed
+        lastMetadataLookupInput = null
+        metadataFetchJob = viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isFetchingMetadata = true, error = null)
+            when (val result = fetchUrlMetadataUseCase(url)) {
+                is NetworkResult.Success -> {
+                    val metadata = result.data
+                    _uiState.value = _uiState.value.copy(
+                        url = metadata.normalizedUrl,
+                        title = metadata.title.orEmpty(),
+                        description = metadata.description.orEmpty(),
+                        faviconUrl = metadata.faviconUrl,
+                        isFetchingMetadata = false,
+                        error = null
+                    )
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isFetchingMetadata = false,
+                        error = result.message
+                    )
+                }
+                is NetworkResult.Loading -> {
+                    _uiState.value = _uiState.value.copy(isFetchingMetadata = true)
+                }
+            }
+        }
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }
