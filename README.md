@@ -1,5 +1,13 @@
 # LinkArena Android
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-1E1E1E?style=for-the-badge&logo=kotlin&logoColor=7F52FF)](https://kotlinlang.org/)
+[![Android](https://img.shields.io/badge/Android-1E1E1E?style=for-the-badge&logo=android&logoColor=3DDC84)](https://developer.android.com/)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-1E1E1E?style=for-the-badge&logo=jetpackcompose&logoColor=4285F4)](https://developer.android.com/jetpack/compose)
+[![Material 3](https://img.shields.io/badge/Material%203-1E1E1E?style=for-the-badge&logo=materialdesign&logoColor=00C4B3)](https://m3.material.io/)
+[![Hilt](https://img.shields.io/badge/Hilt-1E1E1E?style=for-the-badge&logo=dagger&logoColor=F7DF1E)](https://developer.android.com/training/dependency-injection/hilt-android)
+[![Room](https://img.shields.io/badge/Room-1E1E1E?style=for-the-badge&logo=sqlite&logoColor=003B57)](https://developer.android.com/training/data-storage/room)
+[![DataStore](https://img.shields.io/badge/DataStore-1E1E1E?style=for-the-badge&logo=android&logoColor=3DDC84)](https://developer.android.com/topic/libraries/architecture/datastore)
+
 LinkArena is a Jetpack Compose Android app for saving, organizing, and managing bookmarks with groups, search, metadata, and sync support.
 
 ## Features
