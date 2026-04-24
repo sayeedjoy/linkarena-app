@@ -40,6 +40,7 @@ coil = "2.5.0"
 
 # Jsoup
 jsoup = "1.17.2"
+playServicesAds = "25.2.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -95,6 +96,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 
 # Jsoup
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

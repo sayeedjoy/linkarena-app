@@ -92,6 +92,9 @@ dependencies {
     // Jsoup (HTML parsing for metadata fetch)
     implementation(libs.jsoup)
 
+    // Google Mobile Ads SDK
+    implementation(libs.play.services.ads)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)

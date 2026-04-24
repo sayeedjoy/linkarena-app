@@ -53,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sayeedjoy.linkarena.ads.NativeAdCard
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.ui.components.BookmarkCard
 import com.sayeedjoy.linkarena.ui.components.EmptyState
@@ -368,6 +369,10 @@ fun HomeScreen(
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                item(key = "native-ad-top") {
+                                    NativeAdCard()
+                                }
+
                                 items(
                                     items = uiState.bookmarks,
                                     key = { it.id }

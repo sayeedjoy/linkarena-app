@@ -56,6 +56,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.material.icons.rounded.Info
+import com.sayeedjoy.linkarena.ads.RewardedAdManager
+import com.sayeedjoy.linkarena.ads.rememberActivity
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.SettingCategory
@@ -71,6 +73,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val activity = rememberActivity()
 
     val context = LocalContext.current
     val packageInfo = remember(context) {
@@ -90,6 +93,10 @@ fun SettingsScreen(
 
     val displayEmail = uiState.userEmail?.takeIf { it.isNotBlank() } ?: "fallback@email.com"
     val displayName = uiState.userName?.takeIf { it.isNotBlank() } ?: "FallBack Name"
+
+    androidx.compose.runtime.LaunchedEffect(activity) {
+        activity?.let(RewardedAdManager::load)
+    }
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -215,6 +222,21 @@ fun SettingsScreen(
                 shape = shapeManager(isBoth = true, radius = 16),
                 action = onNavigateToAbout
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { activity?.let(RewardedAdManager::show) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Text(
+                    "Watch Rewarded Ad",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sayeedjoy.linkarena.ads.NativeAdCard
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.ui.components.BookmarkCard
@@ -199,6 +200,10 @@ fun GroupDetailScreen(
                     contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    item(key = "native-ad-top") {
+                        NativeAdCard()
+                    }
+
                     items(
                         items = uiState.bookmarks,
                         key = { it.id }
