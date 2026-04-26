@@ -1,6 +1,7 @@
 package com.sayeedjoy.linkarena.ads
 
 import android.app.Activity
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
@@ -43,12 +44,18 @@ object InterstitialAdManager {
 
         interstitialAd = null
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                FullScreenAdCoordinator.onAdShowing()
+            }
+
             override fun onAdDismissedFullScreenContent() {
+                FullScreenAdCoordinator.onAdDismissed()
                 load(activity)
                 onDismissed()
             }
 
-            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                FullScreenAdCoordinator.onAdDismissed()
                 load(activity)
                 onDismissed()
             }

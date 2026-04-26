@@ -3,6 +3,7 @@ package com.sayeedjoy.linkarena.ads
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
@@ -12,7 +13,6 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
     private var currentActivity: Activity? = null
     private var appOpenAd: AppOpenAd? = null
     private var isLoading = false
-    private var isShowing = false
 
     fun register(application: Application) {
         application.registerActivityLifecycleCallbacks(this)
@@ -42,24 +42,27 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
 
     private fun showIfAvailable(activity: Activity) {
         val ad = appOpenAd
-        if (isShowing || ad == null) {
+        if (!FullScreenAdCoordinator.canShowAppOpen() || ad == null) {
             load(activity)
             return
         }
 
         appOpenAd = null
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                FullScreenAdCoordinator.onAdShowing()
+            }
+
             override fun onAdDismissedFullScreenContent() {
-                isShowing = false
+                FullScreenAdCoordinator.onAdDismissed()
                 load(activity)
             }
 
-            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
-                isShowing = false
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                FullScreenAdCoordinator.onAdDismissed()
                 load(activity)
             }
         }
-        isShowing = true
         ad.show(activity)
     }
 
