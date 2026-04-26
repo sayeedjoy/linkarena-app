@@ -19,12 +19,18 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
     }
 
     private fun load(activity: Activity) {
+        val adUnitId = AdUnitIds.appOpen()
+        if (adUnitId.isNullOrBlank()) {
+            appOpenAd = null
+            isLoading = false
+            return
+        }
         if (isLoading || appOpenAd != null) return
 
         isLoading = true
         AppOpenAd.load(
             activity,
-            AdUnitIds.appOpen(activity),
+            adUnitId,
             AdRequest.Builder().build(),
             object : AppOpenAd.AppOpenAdLoadCallback() {
                 override fun onAdLoaded(ad: AppOpenAd) {

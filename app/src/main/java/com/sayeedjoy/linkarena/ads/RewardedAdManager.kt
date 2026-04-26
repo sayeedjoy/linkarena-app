@@ -12,12 +12,18 @@ object RewardedAdManager {
     private var isLoading = false
 
     fun load(activity: Activity) {
+        val adUnitId = AdUnitIds.rewarded()
+        if (adUnitId.isNullOrBlank()) {
+            rewardedAd = null
+            isLoading = false
+            return
+        }
         if (isLoading || rewardedAd != null) return
 
         isLoading = true
         RewardedAd.load(
             activity,
-            AdUnitIds.rewarded(activity),
+            adUnitId,
             AdRequest.Builder().build(),
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {

@@ -13,12 +13,18 @@ object InterstitialAdManager {
     private var isLoading = false
 
     fun load(activity: Activity) {
+        val adUnitId = AdUnitIds.interstitial()
+        if (adUnitId.isNullOrBlank()) {
+            interstitialAd = null
+            isLoading = false
+            return
+        }
         if (isLoading || interstitialAd != null) return
 
         isLoading = true
         InterstitialAd.load(
             activity,
-            AdUnitIds.interstitial(activity),
+            adUnitId,
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {

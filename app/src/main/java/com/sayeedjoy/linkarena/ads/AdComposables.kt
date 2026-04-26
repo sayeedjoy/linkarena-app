@@ -34,6 +34,7 @@ import com.google.android.gms.ads.nativead.NativeAdView
 fun BannerAd(
     modifier: Modifier = Modifier
 ) {
+    val bannerUnitId = AdUnitIds.banner() ?: return
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val adWidth = configuration.screenWidthDp
@@ -48,7 +49,7 @@ fun BannerAd(
         factory = {
             AdView(it).apply {
                 setAdSize(adSize)
-                adUnitId = AdUnitIds.banner(it)
+                this.adUnitId = bannerUnitId
                 loadAd(AdRequest.Builder().build())
             }
         },
@@ -66,10 +67,11 @@ fun NativeAdCard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val adUnitId = AdUnitIds.native() ?: return
     var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
 
     LaunchedEffect(context) {
-        AdLoader.Builder(context, AdUnitIds.native(context))
+        AdLoader.Builder(context, adUnitId)
             .forNativeAd { ad ->
                 nativeAd?.destroy()
                 nativeAd = ad

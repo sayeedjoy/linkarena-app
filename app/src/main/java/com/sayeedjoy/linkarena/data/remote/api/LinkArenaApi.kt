@@ -1,5 +1,6 @@
 package com.sayeedjoy.linkarena.data.remote.api
 
+import com.sayeedjoy.linkarena.data.remote.dto.AdsConfigDto
 import com.sayeedjoy.linkarena.data.remote.dto.AuthResponse
 import com.sayeedjoy.linkarena.data.remote.dto.BookmarkResponse
 import com.sayeedjoy.linkarena.data.remote.dto.CreateBookmarkRequest
@@ -28,6 +29,10 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LinkArenaApi {
+
+    // Ads
+    @GET("api/mobile/ads")
+    suspend fun getAdsConfig(): Response<AdsConfigDto>
 
     // Auth
     @POST("api/mobile/auth/login")
