@@ -1,6 +1,5 @@
 package com.sayeedjoy.linkarena.data.repository
 
-import com.sayeedjoy.linkarena.data.local.datastore.PreferencesManager
 import com.sayeedjoy.linkarena.data.local.db.GroupDao
 import com.sayeedjoy.linkarena.data.local.db.entity.GroupEntity
 import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
@@ -26,8 +25,7 @@ import javax.inject.Inject
 class GroupRepositoryImpl @Inject constructor(
     private val api: LinkArenaApi,
     private val groupDao: GroupDao,
-    private val json: Json,
-    private val preferencesManager: PreferencesManager
+    private val json: Json
 ) : GroupRepository {
 
     override fun getGroups(): Flow<List<Group>> {
@@ -114,7 +112,6 @@ class GroupRepositoryImpl @Inject constructor(
                 NetworkResult.Success(Unit)
             } else {
                 if (response.code() == 401) {
-                    preferencesManager.clearSession()
                     NetworkResult.Error("Authentication expired. Please sign in again.")
                 } else {
                     NetworkResult.Error("Sync failed")

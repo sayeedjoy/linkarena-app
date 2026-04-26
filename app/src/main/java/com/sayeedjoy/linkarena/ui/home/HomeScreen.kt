@@ -369,15 +369,14 @@ fun HomeScreen(
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                item(key = "native-ad-top") {
-                                    NativeAdCard()
-                                }
-
-                                items(
-                                    items = uiState.bookmarks,
-                                    key = { it.id }
-                                ) { bookmark ->
-                                    BookmarkCard(
+                                uiState.bookmarks.forEachIndexed { index, bookmark ->
+                                    if (index == 4) {
+                                        item(key = "native-ad") {
+                                            NativeAdCard()
+                                        }
+                                    }
+                                    item(key = bookmark.id) {
+                                        BookmarkCard(
                                         bookmark = bookmark,
                                         modifier = Modifier.animateItem(),
                                         onClick = {
@@ -418,7 +417,8 @@ fun HomeScreen(
                                         onDelete = { bookmarkPendingDelete = bookmark },
                                         isSelectionMode = isSelectionMode,
                                         isSelected = selectedBookmarkIds.contains(bookmark.id)
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
