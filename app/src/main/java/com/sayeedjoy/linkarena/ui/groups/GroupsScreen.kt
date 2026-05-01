@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sayeedjoy.linkarena.ads.AdConfigManager
 import com.sayeedjoy.linkarena.domain.model.Group
 import com.sayeedjoy.linkarena.ui.components.EmptyState
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
@@ -64,7 +65,8 @@ fun GroupsScreen(
             onCreate = { name, color ->
                 viewModel.createGroup(name, color)
                 showCreateDialog = false
-            }
+            },
+            groupColoringAllowed = AdConfigManager.groupColoringAllowed
         )
     }
 
@@ -79,7 +81,8 @@ fun GroupsScreen(
             onDelete = {
                 viewModel.deleteGroup(group.id)
                 editingGroup = null
-            }
+            },
+            groupColoringAllowed = AdConfigManager.groupColoringAllowed
         )
     }
 

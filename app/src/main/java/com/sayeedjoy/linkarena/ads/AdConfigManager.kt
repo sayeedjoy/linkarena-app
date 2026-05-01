@@ -12,6 +12,7 @@ object AdConfigManager {
     @Volatile var nativeAd: String? = null
     @Volatile var isPremium: Boolean = false
     @Volatile var planDisplayName: String? = null
+    @Volatile var groupColoringAllowed: Boolean = true
 
     suspend fun fetch(api: LinkArenaApi) {
         try {
@@ -42,6 +43,7 @@ object AdConfigManager {
                 val slug = settings?.plan?.slug.orEmpty()
                 isPremium = slug == "premium"
                 planDisplayName = settings?.plan?.displayName?.takeIf { it.isNotBlank() }
+                groupColoringAllowed = settings?.groupColoringAllowed != false
                 if (isPremium) disableAds()
             }
         } catch (_: Exception) {

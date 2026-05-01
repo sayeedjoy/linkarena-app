@@ -65,6 +65,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.sayeedjoy.linkarena.ui.components.ColorDot
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
+import com.sayeedjoy.linkarena.ads.AdConfigManager
 import com.sayeedjoy.linkarena.ui.groups.CreateGroupDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +92,8 @@ fun AddBookmarkScreen(
             onCreate = { name, color ->
                 viewModel.createGroup(name, color)
                 showCreateGroupDialog = false
-            }
+            },
+            groupColoringAllowed = AdConfigManager.groupColoringAllowed
         )
     }
 
