@@ -9,7 +9,6 @@ import com.sayeedjoy.linkarena.data.remote.dto.ForgotPasswordRequest
 import com.sayeedjoy.linkarena.data.remote.dto.MessageResponse
 import com.sayeedjoy.linkarena.data.remote.dto.ResetPasswordRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SessionResponse
-import com.sayeedjoy.linkarena.data.remote.dto.SettingsResponse
 import com.sayeedjoy.linkarena.data.remote.dto.SignInRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SignUpRequest
 import com.sayeedjoy.linkarena.data.remote.dto.SyncResponseDto
@@ -17,6 +16,7 @@ import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkCategoryRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateBookmarkRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateGroupRequest
 import com.sayeedjoy.linkarena.data.remote.dto.UpdateSettingsRequest
+import com.sayeedjoy.linkarena.data.remote.dto.UserSettingsDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
 import retrofit2.http.Body
@@ -97,10 +97,10 @@ interface LinkArenaApi {
 
     // Settings
     @GET("api/settings")
-    suspend fun getSettings(): Response<SettingsResponse>
+    suspend fun getSettings(): Response<UserSettingsDto>
 
     @PATCH("api/settings")
-    suspend fun updateSettings(@Body request: UpdateSettingsRequest): Response<SettingsResponse>
+    suspend fun updateSettings(@Body request: UpdateSettingsRequest): Response<UserSettingsDto>
 
     // Export
     @GET("api/export")

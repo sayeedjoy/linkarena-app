@@ -4,16 +4,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserSettingsDto(
-    val autoGroupEnabled: Boolean = false
+    val autoGroupEnabled: Boolean = false,
+    val aiGroupingAllowed: Boolean = false,
+    val groupColoringAllowed: Boolean = false,
+    val planSource: String? = null,
+    val plan: PlanDto? = null
+)
+
+@Serializable
+data class PlanDto(
+    val slug: String = "",
+    val displayName: String = ""
 )
 
 @Serializable
 data class UpdateSettingsRequest(
     val autoGroupEnabled: Boolean
-)
-
-@Serializable
-data class SettingsResponse(
-    val settings: UserSettingsDto? = null,
-    val error: String? = null
 )

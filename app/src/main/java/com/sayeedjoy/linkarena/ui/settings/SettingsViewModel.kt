@@ -2,6 +2,7 @@ package com.sayeedjoy.linkarena.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sayeedjoy.linkarena.ads.AdConfigManager
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.domain.repository.ThemePreferencesRepository
@@ -19,6 +20,7 @@ data class SettingsUiState(
     val userName: String? = null,
     val userPhotoUrl: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val planDisplayName: String? = null,
     val isLoading: Boolean = false
 )
 
@@ -48,7 +50,8 @@ class SettingsViewModel @Inject constructor(
                     userEmail = email,
                     userName = name,
                     userPhotoUrl = photoUrl,
-                    themeMode = themeMode
+                    themeMode = themeMode,
+                    planDisplayName = AdConfigManager.planDisplayName
                 )
             }.collect { newState ->
                 _uiState.value = newState

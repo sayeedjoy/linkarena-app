@@ -10,6 +10,7 @@ import com.sayeedjoy.linkarena.data.remote.dto.SignUpRequest
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -112,7 +113,13 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.getSession()
             if (response.isSuccessful && response.body()?.user != null) {
                 val user = response.body()!!.user!!
-                preferencesManager.saveUser(user.id, user.email, user.name, user.photoUrl)
+                val existingName = preferencesManager.userName.first()
+                preferencesManager.saveUser(
+                    id = user.id,
+                    email = user.email,
+                    name = user.name ?: existingName,
+                    photoUrl = user.photoUrl
+                )
                 NetworkResult.Success(Unit)
             } else {
                 NetworkResult.Error(response.body()?.error ?: "Session invalid")

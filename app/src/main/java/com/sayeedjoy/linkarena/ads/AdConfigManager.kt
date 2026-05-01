@@ -10,6 +10,8 @@ object AdConfigManager {
     @Volatile var appOpen: String? = null
     @Volatile var rewarded: String? = null
     @Volatile var nativeAd: String? = null
+    @Volatile var isPremium: Boolean = false
+    @Volatile var planDisplayName: String? = null
 
     suspend fun fetch(api: LinkArenaApi) {
         try {
@@ -29,6 +31,21 @@ object AdConfigManager {
             }
         } catch (_: Exception) {
             disableAds()
+        }
+    }
+
+    suspend fun fetchSettings(api: LinkArenaApi) {
+        try {
+            val response = api.getSettings()
+            if (response.isSuccessful) {
+                val settings = response.body()
+                val slug = settings?.plan?.slug.orEmpty()
+                isPremium = slug == "premium"
+                planDisplayName = settings?.plan?.displayName?.takeIf { it.isNotBlank() }
+                if (isPremium) disableAds()
+            }
+        } catch (_: Exception) {
+            // keep current state
         }
     }
 
