@@ -2,6 +2,8 @@ package com.sayeedjoy.linkarena.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sayeedjoy.linkarena.ads.AdConfigManager
+import com.sayeedjoy.linkarena.data.remote.api.LinkArenaApi
 import com.sayeedjoy.linkarena.domain.usecase.auth.LoginUseCase
 import com.sayeedjoy.linkarena.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +23,8 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val linkArenaApi: LinkArenaApi
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -41,6 +44,7 @@ class LoginViewModel @Inject constructor(
 
             when (val result = loginUseCase(_uiState.value.email, _uiState.value.password)) {
                 is NetworkResult.Success -> {
+                    AdConfigManager.fetchSettings(linkArenaApi)
                     _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                 }
                 is NetworkResult.Error -> {

@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,11 +25,13 @@ import androidx.navigation.compose.rememberNavController
 import com.sayeedjoy.linkarena.domain.model.ThemeMode
 import com.sayeedjoy.linkarena.domain.repository.AuthRepository
 import com.sayeedjoy.linkarena.domain.repository.ThemePreferencesRepository
-import com.sayeedjoy.linkarena.ui.components.LoadingIndicator
 import com.sayeedjoy.linkarena.ui.navigation.AuthNavGraph
 import com.sayeedjoy.linkarena.ui.navigation.MainNavGraph
+import com.sayeedjoy.linkarena.ui.splash.SplashScreen
+import com.sayeedjoy.linkarena.ui.splash.SplashViewModel
 import com.sayeedjoy.linkarena.ui.theme.LinkArenaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -103,26 +107,37 @@ fun LinkArenaApp(
     sharedUrl: String? = null,
     onSharedUrlConsumed: () -> Unit = {}
 ) {
-    val navController = rememberNavController()
+    val splashViewModel: SplashViewModel = hiltViewModel()
+    val splashUiState by splashViewModel.uiState.collectAsState()
     val isLoggedIn by authRepository.isLoggedIn
         .map<Boolean, Boolean?> { it }
         .collectAsState(initial = null)
 
-    when (isLoggedIn) {
-        null -> LoadingIndicator()
-        true -> {
-            MainNavGraph(
-                navController = navController,
-                onLogout = {},
-                sharedUrl = sharedUrl,
-                onSharedUrlConsumed = onSharedUrlConsumed
-            )
-        }
-        false -> {
-            AuthNavGraph(
-                navController = navController,
-                onAuthSuccess = {}
-            )
+    Crossfade(targetState = Pair(splashUiState.destination, isLoggedIn), label = "startup_crossfade") { state ->
+        val destination = state.first
+        val loggedIn = state.second
+        when {
+            destination == null || loggedIn == null -> SplashScreen()
+            loggedIn -> {
+                key("main_graph") {
+                    val mainNavController = rememberNavController()
+                    MainNavGraph(
+                        navController = mainNavController,
+                        onLogout = {},
+                        sharedUrl = sharedUrl,
+                        onSharedUrlConsumed = onSharedUrlConsumed
+                    )
+                }
+            }
+            else -> {
+                key("auth_graph") {
+                    val authNavController = rememberNavController()
+                    AuthNavGraph(
+                        navController = authNavController,
+                        onAuthSuccess = {}
+                    )
+                }
+            }
         }
     }
 }

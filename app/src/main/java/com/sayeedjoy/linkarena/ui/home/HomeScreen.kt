@@ -7,8 +7,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -51,8 +53,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sayeedjoy.linkarena.R
 import com.sayeedjoy.linkarena.ads.NativeAdCard
 import com.sayeedjoy.linkarena.domain.model.Bookmark
 import com.sayeedjoy.linkarena.ui.components.BookmarkCard
@@ -75,6 +79,7 @@ private enum class ContentState { Initializing, Loading, Error, Empty, Content }
 fun HomeScreen(
     onNavigateToAddBookmark: () -> Unit,
     onNavigateToBookmarkDetail: (String) -> Unit,
+    onNavigateToPremium: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val autoRevalidateIntervalMs = 30.seconds.inWholeMilliseconds
@@ -243,6 +248,14 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close selection"
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = onNavigateToPremium) {
+                            Image(
+                                painter = painterResource(id = R.mipmap.ic_premium_foreground),
+                                contentDescription = "Premium",
+                                modifier = Modifier.size(36.dp)
                             )
                         }
                     }

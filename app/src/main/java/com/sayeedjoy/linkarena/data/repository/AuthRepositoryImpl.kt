@@ -18,6 +18,9 @@ class AuthRepositoryImpl @Inject constructor(
     private val api: LinkArenaApi,
     private val preferencesManager: PreferencesManager
 ) : AuthRepository {
+    private companion object {
+        const val AUTH_EXPIRED_MESSAGE = "Authentication expired. Please sign in again."
+    }
 
     override val isLoggedIn: Flow<Boolean> = preferencesManager.isLoggedIn
     override val userEmail: Flow<String?> = preferencesManager.userEmail
@@ -122,7 +125,11 @@ class AuthRepositoryImpl @Inject constructor(
                 )
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(response.body()?.error ?: "Session invalid")
+                if (response.code() == 401) {
+                    NetworkResult.Error(AUTH_EXPIRED_MESSAGE)
+                } else {
+                    NetworkResult.Error(response.body()?.error ?: "Session invalid")
+                }
             }
         } catch (e: Exception) {
             NetworkResult.Error(e.message ?: "Network error")

@@ -34,6 +34,7 @@ import com.sayeedjoy.linkarena.ui.bookmark.BookmarkDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupsScreen
 import com.sayeedjoy.linkarena.ui.home.HomeScreen
+import com.sayeedjoy.linkarena.ui.premium.PremiumScreen
 import com.sayeedjoy.linkarena.ui.settings.About
 import com.sayeedjoy.linkarena.ui.settings.SettingsScreen
 
@@ -161,6 +162,9 @@ fun MainNavGraph(
                                 navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
                             }
                         } ?: navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
+                    },
+                    onNavigateToPremium = {
+                        navController.navigate(Screen.Premium.route)
                     }
                 )
             }
@@ -216,7 +220,16 @@ fun MainNavGraph(
                         navController.navigate(Screen.About.route) {
                             launchSingleTop = true
                         }
+                    },
+                    onNavigateToPremium = {
+                        navController.navigate(Screen.Premium.route)
                     }
+                )
+            }
+
+            composable(Screen.Premium.route) {
+                PremiumScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 
