@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.NightsStay
@@ -130,31 +128,32 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .statusBarsPadding(),
-        contentPadding = PaddingValues(bottom = 20.dp)
+        contentPadding = PaddingValues(top = 14.dp, bottom = 20.dp)
     ) {
-        item {
+        item(key = "settings-header") {
             SettingsHeader(
                 displayName = displayName,
                 displayEmail = displayEmail,
-                photoUrl = uiState.userPhotoUrl
+                photoUrl = uiState.userPhotoUrl,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
 
-        item {
+        item(key = "premium-card") {
             PremiumUpgradeCard(
                 isPremium = isPremium,
                 onClick = onNavigateToPremium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .offset(y = (-22).dp)
+                    .padding(top = 12.dp)
             )
         }
 
-        item {
+        item(key = "preferences-section") {
             SettingsSection(
                 title = "Preferences",
-                modifier = Modifier.offset(y = (-10).dp)
+                modifier = Modifier.padding(top = 16.dp)
             ) {
                 SettingsRow(
                     icon = Icons.Filled.NightsStay,
@@ -174,11 +173,8 @@ fun SettingsScreen(
             }
         }
 
-        item {
-            SettingsSection(
-                title = "Support",
-                modifier = Modifier.offset(y = (-4).dp)
-            ) {
+        item(key = "support-section") {
+            SettingsSection(title = "Support") {
                 SettingsRow(
                     icon = Icons.Outlined.Info,
                     title = "About Link Arena",
@@ -228,7 +224,7 @@ fun SettingsScreen(
             }
         }
 
-        item {
+        item(key = "account-section") {
             SettingsSection(title = "Account") {
                 SettingsRow(
                     icon = Icons.AutoMirrored.Filled.Logout,
@@ -241,7 +237,7 @@ fun SettingsScreen(
             }
         }
 
-        item {
+        item(key = "settings-footer") {
             SettingsFooter(versionName = versionName)
         }
     }
@@ -251,50 +247,59 @@ fun SettingsScreen(
 private fun SettingsHeader(
     displayName: String,
     displayEmail: String,
-    photoUrl: String?
+    photoUrl: String?,
+    modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .background(colorScheme.surfaceContainerLow)
-            .padding(horizontal = 20.dp, vertical = 14.dp)
     ) {
         Text(
             text = "Settings",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = colorScheme.onSurface
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Manage your account, preferences, and app support.",
+            style = MaterialTheme.typography.bodyMedium,
             color = colorScheme.onSurfaceVariant
         )
-        Spacer(Modifier.height(14.dp))
-        Row(
+        Spacer(Modifier.height(16.dp))
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            shape = RoundedCornerShape(24.dp),
+            color = colorScheme.surface,
+            tonalElevation = 1.dp,
+            shadowElevation = 1.dp
         ) {
-            ProfileAvatar(photoUrl = photoUrl)
-            Spacer(Modifier.size(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.2).sp
-                    ),
-                    color = colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = displayEmail,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProfileAvatar(photoUrl = photoUrl)
+                Spacer(Modifier.size(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = displayEmail,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
             }
         }
-        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -406,52 +411,31 @@ private fun PremiumUpgradeCard(
 
 @Composable
 private fun ProfileAvatar(photoUrl: String?) {
-    Box(contentAlignment = Alignment.BottomEnd) {
-        Box(
-            modifier = Modifier
-                .size(52.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.25f))
-                .padding(2.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            if (!photoUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(photoUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.fillMaxSize().clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .offset(x = (-2).dp, y = (-2).dp)
-                .size(18.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(2.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface),
-            contentAlignment = Alignment.Center
-        ) {
+    Box(
+        modifier = Modifier
+            .size(58.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!photoUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(photoUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Profile picture",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
             Icon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit profile",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(10.dp)
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(32.dp)
             )
         }
     }
