@@ -1,9 +1,7 @@
 package com.sayeedjoy.linkarena.ui.premium
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -47,7 +45,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -55,10 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -66,12 +61,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sayeedjoy.linkarena.R
 import com.sayeedjoy.linkarena.ads.AdConfigManager
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
+import com.sayeedjoy.linkarena.ui.components.ScreenSystemBars
 import com.sayeedjoy.linkarena.ui.theme.LinkArenaTheme
 
 private data class PremiumBenefit(
@@ -588,39 +583,14 @@ private fun PremiumActions(
 }
 
 @Composable
-@Suppress("DEPRECATION")
 private fun PremiumSystemBars(
     statusBarColor: Color,
     navigationBarColor: Color
 ) {
-    val view = LocalView.current
-    val activity = view.context.findActivity() ?: return
-    val background = MaterialTheme.colorScheme.background
-
-    DisposableEffect(activity, statusBarColor, navigationBarColor, background) {
-        val window = activity.window
-        val previousStatusBar = window.statusBarColor
-        val previousNavigationBar = window.navigationBarColor
-        val controller = WindowCompat.getInsetsController(window, view)
-
-        window.statusBarColor = statusBarColor.toArgb()
-        window.navigationBarColor = navigationBarColor.toArgb()
-        controller.isAppearanceLightStatusBars = true
-        controller.isAppearanceLightNavigationBars = true
-
-        onDispose {
-            window.statusBarColor = previousStatusBar.takeUnless { it == Color.Transparent.toArgb() }
-                ?: background.toArgb()
-            window.navigationBarColor = previousNavigationBar.takeUnless { it == Color.Transparent.toArgb() }
-                ?: background.toArgb()
-        }
-    }
-}
-
-private fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
+    ScreenSystemBars(
+        statusBarColor = statusBarColor,
+        navigationBarColor = navigationBarColor
+    )
 }
 
 private fun buildBenefitList(): List<PremiumBenefit> = listOf(

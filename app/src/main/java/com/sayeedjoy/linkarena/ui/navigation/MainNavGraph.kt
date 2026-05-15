@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.sayeedjoy.linkarena.ads.BannerAd
 import com.sayeedjoy.linkarena.ads.InterstitialAdManager
 import com.sayeedjoy.linkarena.ads.rememberActivity
+import com.sayeedjoy.linkarena.ui.components.ScreenSystemBars
 import com.sayeedjoy.linkarena.ui.bookmark.AddBookmarkScreen
 import com.sayeedjoy.linkarena.ui.bookmark.BookmarkDetailScreen
 import com.sayeedjoy.linkarena.ui.groups.GroupDetailScreen
@@ -65,6 +66,23 @@ fun MainNavGraph(
 
     val showBottomBar = currentRoute in bottomBarDestinations
     val activity = rememberActivity()
+    val defaultBackground = MaterialTheme.colorScheme.background
+    val tabBackgroundColor = MaterialTheme.colorScheme.surfaceContainerLow
+    val bottomBarColor = tabBackgroundColor
+    val bottomBarContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val statusBarColor = when (currentRoute) {
+        Screen.Home.route,
+        Screen.Groups.route,
+        Screen.Settings.route -> tabBackgroundColor
+        Screen.About.route -> MaterialTheme.colorScheme.surface
+        else -> defaultBackground
+    }
+    val navigationBarColor = if (showBottomBar) bottomBarColor else statusBarColor
+
+    ScreenSystemBars(
+        statusBarColor = statusBarColor,
+        navigationBarColor = navigationBarColor
+    )
 
     LaunchedEffect(activity) {
         activity?.let(InterstitialAdManager::load)
@@ -76,8 +94,8 @@ fun MainNavGraph(
                 Column {
                     BannerAd()
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.85f),
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = bottomBarColor,
+                        contentColor = bottomBarContentColor,
                         tonalElevation = 0.dp
                     ) {
                         NavigationBarItem(
@@ -88,8 +106,8 @@ fun MainNavGraph(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                unselectedIconColor = bottomBarContentColor,
+                                unselectedTextColor = bottomBarContentColor
                             ),
                             onClick = {
                                 navController.navigate(Screen.Home.route) {
@@ -107,8 +125,8 @@ fun MainNavGraph(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                unselectedIconColor = bottomBarContentColor,
+                                unselectedTextColor = bottomBarContentColor
                             ),
                             onClick = {
                                 navController.navigate(Screen.Groups.route) {
@@ -126,8 +144,8 @@ fun MainNavGraph(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                unselectedIconColor = bottomBarContentColor,
+                                unselectedTextColor = bottomBarContentColor
                             ),
                             onClick = {
                                 navController.navigate(Screen.Settings.route) {

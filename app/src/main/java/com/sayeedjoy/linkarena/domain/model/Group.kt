@@ -1,5 +1,8 @@
 package com.sayeedjoy.linkarena.domain.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Group(
     val id: String,
     val name: String,

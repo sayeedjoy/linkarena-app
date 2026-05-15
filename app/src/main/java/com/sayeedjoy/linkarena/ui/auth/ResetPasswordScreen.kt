@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sayeedjoy.linkarena.ui.components.LinkArenaTopBar
 import com.sayeedjoy.linkarena.ui.components.LoadingButton
+import com.sayeedjoy.linkarena.ui.components.ScreenSystemBars
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +54,10 @@ fun ResetPasswordScreen(
     val focusManager = LocalFocusManager.current
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    ScreenSystemBars(
+        statusBarColor = MaterialTheme.colorScheme.background,
+        navigationBarColor = MaterialTheme.colorScheme.background
+    )
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {

@@ -97,7 +97,7 @@ fun GroupsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { padding ->
         var searchQuery by remember { mutableStateOf("") }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CheckCircle
@@ -52,7 +56,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -126,196 +129,223 @@ fun SettingsScreen(
         )
     }
 
-    Box(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .statusBarsPadding(),
+        contentPadding = PaddingValues(bottom = 20.dp)
     ) {
-        // Header background extends behind the status bar area.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(210.dp)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(headerColor, headerColor.copy(alpha = 0.92f))
-                    )
-                )
-        )
+        item {
+            SettingsHeader(
+                displayName = displayName,
+                displayEmail = displayEmail,
+                photoUrl = uiState.userPhotoUrl,
+                headerColor = headerColor,
+                onHeaderColor = onHeaderColor
+            )
+        }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            // Header content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 34.dp, bottom = 18.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ProfileAvatar(photoUrl = uiState.userPhotoUrl)
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.3).sp
-                    ),
-                    color = onHeaderColor
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = displayEmail,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = onHeaderColor.copy(alpha = 0.85f)
-                )
-            }
-
-            Box(
+        item {
+            PremiumUpgradeCard(
+                isPremium = isPremium,
+                onClick = onNavigateToPremium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
+                    .offset(y = (-22).dp)
+            )
+        }
+
+        item {
+            SettingsSection(
+                title = "Preferences",
+                modifier = Modifier.offset(y = (-10).dp)
             ) {
-                PremiumUpgradeCard(isPremium = isPremium, onClick = onNavigateToPremium)
+                SettingsRow(
+                    icon = Icons.Filled.NightsStay,
+                    title = "Theme",
+                    subtitle = "Choose how LinkArena follows your display",
+                    trailing = {
+                        Text(
+                            text = uiState.themeMode.label(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        ChevronEnd()
+                    },
+                    onClick = { showThemeDialog = true }
+                )
             }
+        }
 
-            Spacer(Modifier.height(12.dp))
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 1.dp,
-                shadowElevation = 2.dp
+        item {
+            SettingsSection(
+                title = "Support",
+                modifier = Modifier.offset(y = (-4).dp)
             ) {
-                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    SettingsRow(
-                        icon = Icons.Filled.NightsStay,
-                        title = "Theme",
-                        verticalPadding = 12.dp,
-                        trailing = {
-                            Text(
-                                text = uiState.themeMode.label(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(Modifier.size(6.dp))
-                            ChevronEnd()
-                        },
-                        onClick = { showThemeDialog = true }
-                    )
-                    RowDivider()
-                    SettingsRow(
-                        icon = Icons.Outlined.Info,
-                        title = "About Link Arena",
-                        verticalPadding = 12.dp,
-                        trailing = { ChevronEnd() },
-                        onClick = onNavigateToAbout
-                    )
-                    RowDivider()
-                    SettingsRow(
-                        icon = Icons.Filled.HelpOutline,
-                        title = "Help & Support",
-                        verticalPadding = 12.dp,
-                        trailing = { ChevronEnd() },
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:thesayeedjoy@gmail.com")
-                                putExtra(Intent.EXTRA_SUBJECT, "LinkArena - Help & Support")
-                            }
-                            runCatching { context.startActivity(intent) }
+                SettingsRow(
+                    icon = Icons.Outlined.Info,
+                    title = "About Link Arena",
+                    subtitle = "Version, credits, and app information",
+                    trailing = { ChevronEnd() },
+                    onClick = onNavigateToAbout
+                )
+                RowDivider()
+                SettingsRow(
+                    icon = Icons.Filled.HelpOutline,
+                    title = "Help & Support",
+                    subtitle = "Send feedback or get help by email",
+                    trailing = { ChevronEnd() },
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:thesayeedjoy@gmail.com")
+                            putExtra(Intent.EXTRA_SUBJECT, "LinkArena - Help & Support")
                         }
-                    )
-                    RowDivider()
-                    SettingsRow(
-                        icon = Icons.Filled.StarOutline,
-                        title = "Rate the App",
-                        verticalPadding = 12.dp,
-                        trailing = { ChevronEnd() },
-                        onClick = {
-                            val pkg = context.packageName
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("market://details?id=$pkg")
-                            )
-                            val result = runCatching { context.startActivity(intent) }
-                            if (result.isFailure) {
-                                runCatching {
-                                    context.startActivity(
-                                        Intent(
-                                            Intent.ACTION_VIEW,
-                                            Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
-                                        )
+                        runCatching { context.startActivity(intent) }
+                    }
+                )
+                RowDivider()
+                SettingsRow(
+                    icon = Icons.Filled.StarOutline,
+                    title = "Rate the App",
+                    subtitle = "Share a review on Google Play",
+                    trailing = { ChevronEnd() },
+                    onClick = {
+                        val pkg = context.packageName
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("market://details?id=$pkg")
+                        )
+                        val result = runCatching { context.startActivity(intent) }
+                        if (result.isFailure) {
+                            runCatching {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
                                     )
-                                }
+                                )
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
+        }
 
-            Spacer(Modifier.height(12.dp))
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 1.dp,
-                shadowElevation = 2.dp
-            ) {
+        item {
+            SettingsSection(title = "Account") {
                 SettingsRow(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     title = "Sign Out",
+                    subtitle = "End this session on the device",
                     tint = MaterialTheme.colorScheme.error,
-                    verticalPadding = 12.dp,
                     trailing = { ChevronEnd(tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)) },
                     onClick = { showLogoutDialog = true }
                 )
             }
+        }
 
-            Spacer(Modifier.weight(1f))
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Link Arena v$versionName",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Made with ",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = "<3",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = " for power users",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
+        item {
+            SettingsFooter(versionName = versionName)
         }
     }
 }
 
 @Composable
-private fun PremiumUpgradeCard(isPremium: Boolean, onClick: () -> Unit) {
+private fun SettingsHeader(
+    displayName: String,
+    displayEmail: String,
+    photoUrl: String?,
+    headerColor: Color,
+    onHeaderColor: Color
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(238.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        headerColor,
+                        headerColor.copy(alpha = 0.92f),
+                        MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = onHeaderColor.copy(alpha = 0.82f)
+            )
+            Spacer(Modifier.height(18.dp))
+            ProfileAvatar(photoUrl = photoUrl)
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.2).sp
+                ),
+                color = onHeaderColor
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = displayEmail,
+                style = MaterialTheme.typography.bodyMedium,
+                color = onHeaderColor.copy(alpha = 0.82f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp,
+            shadowElevation = 1.dp
+        ) {
+            Column(modifier = Modifier.padding(vertical = 6.dp), content = content)
+        }
+    }
+    Spacer(Modifier.height(14.dp))
+}
+
+@Composable
+private fun PremiumUpgradeCard(
+    isPremium: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val gradient = Brush.horizontalGradient(listOf(primaryColor, tertiaryColor))
@@ -326,7 +356,7 @@ private fun PremiumUpgradeCard(isPremium: Boolean, onClick: () -> Unit) {
         color = Color.Transparent,
         tonalElevation = 0.dp,
         shadowElevation = 8.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
@@ -442,8 +472,8 @@ private fun ProfileAvatar(photoUrl: String?) {
 private fun SettingsRow(
     icon: ImageVector,
     title: String,
+    subtitle: String,
     tint: Color = MaterialTheme.colorScheme.onSurface,
-    verticalPadding: Dp = 16.dp,
     trailing: @Composable () -> Unit = {},
     onClick: () -> Unit
 ) {
@@ -451,23 +481,72 @@ private fun SettingsRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = verticalPadding),
+            .padding(horizontal = 18.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier.size(22.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(tint.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(21.dp)
+            )
+        }
         Spacer(Modifier.size(16.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = tint,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = if (tint == MaterialTheme.colorScheme.error) tint else MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         Row(verticalAlignment = Alignment.CenterVertically) { trailing() }
+    }
+}
+
+@Composable
+private fun SettingsFooter(versionName: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Link Arena v$versionName",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
+        )
+        Spacer(Modifier.height(4.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "Made with ",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.64f)
+            )
+            Text(
+                text = "<3",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+            Text(
+                text = " for power users",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.64f)
+            )
+        }
     }
 }
 

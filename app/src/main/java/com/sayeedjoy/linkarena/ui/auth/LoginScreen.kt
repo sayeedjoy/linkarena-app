@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sayeedjoy.linkarena.ui.components.GradientButton
+import com.sayeedjoy.linkarena.ui.components.ScreenSystemBars
 
 @Composable
 fun LoginScreen(
@@ -69,6 +70,10 @@ fun LoginScreen(
     val screenBackgroundColor = if (isDarkTheme) Color.Black else MaterialTheme.colorScheme.background
     val inputContainerColor =
         if (isDarkTheme) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    ScreenSystemBars(
+        statusBarColor = screenBackgroundColor,
+        navigationBarColor = screenBackgroundColor
+    )
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
