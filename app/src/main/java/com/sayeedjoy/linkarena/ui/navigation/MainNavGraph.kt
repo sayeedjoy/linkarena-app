@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -40,6 +41,18 @@ import com.sayeedjoy.linkarena.ui.premium.PremiumScreen
 import com.sayeedjoy.linkarena.ui.settings.About
 import com.sayeedjoy.linkarena.ui.settings.SettingsScreen
 
+private data class BottomNavDestination(
+    val route: String,
+    val label: String,
+    val icon: ImageVector
+)
+
+private val BottomNavDestinations = listOf(
+    BottomNavDestination(Screen.Home.route, "Home", Icons.Filled.Home),
+    BottomNavDestination(Screen.Groups.route, "Groups", Icons.Filled.Folder),
+    BottomNavDestination(Screen.Settings.route, "Settings", Icons.Filled.Settings)
+)
+
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
@@ -59,18 +72,11 @@ fun MainNavGraph(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val bottomBarDestinations = listOf(
-        Screen.Home.route,
-        Screen.Groups.route,
-        Screen.Settings.route
-    )
-
-    val showBottomBar = currentRoute in bottomBarDestinations
+    val showBottomBar = BottomNavDestinations.any { it.route == currentRoute }
     val activity = rememberActivity()
     val defaultBackground = MaterialTheme.colorScheme.background
     val tabBackgroundColor = MaterialTheme.colorScheme.surfaceContainerLow
     val bottomBarColor = tabBackgroundColor
-    val bottomBarContentColor = MaterialTheme.colorScheme.onSurfaceVariant
     val statusBarColor = when (currentRoute) {
         Screen.Home.route,
         Screen.Groups.route,
@@ -94,72 +100,19 @@ fun MainNavGraph(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
-                Column {
-                    BannerAd()
-                    NavigationBar(
-                        containerColor = bottomBarColor,
-                        contentColor = bottomBarContentColor,
-                        tonalElevation = 0.dp
-                    ) {
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-                            label = { Text("Home", style = MaterialTheme.typography.labelSmall) },
-                            selected = currentRoute == Screen.Home.route,
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = bottomBarContentColor,
-                                unselectedTextColor = bottomBarContentColor
-                            ),
-                            onClick = {
-                                navController.navigate(Screen.Home.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                MainBottomBar(
+                    destinations = BottomNavDestinations,
+                    currentRoute = currentRoute,
+                    onDestinationClick = { route ->
+                        if (currentRoute != route) {
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Filled.Folder, contentDescription = "Groups") },
-                            label = { Text("Groups", style = MaterialTheme.typography.labelSmall) },
-                            selected = currentRoute == Screen.Groups.route,
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = bottomBarContentColor,
-                                unselectedTextColor = bottomBarContentColor
-                            ),
-                            onClick = {
-                                navController.navigate(Screen.Groups.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Filled.Settings, contentDescription = "Settings") },
-                            label = { Text("Settings", style = MaterialTheme.typography.labelSmall) },
-                            selected = currentRoute == Screen.Settings.route,
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = bottomBarContentColor,
-                                unselectedTextColor = bottomBarContentColor
-                            ),
-                            onClick = {
-                                navController.navigate(Screen.Settings.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
+                        }
                     }
-                }
+                )
             }
         }
     ) { paddingValues ->
@@ -273,6 +226,52 @@ fun MainNavGraph(
                     onNavigateToBookmarkDetail = { bookmarkId ->
                         navController.navigate(Screen.BookmarkDetail.createRoute(bookmarkId))
                     }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainBottomBar(
+    destinations: List<BottomNavDestination>,
+    currentRoute: String?,
+    onDestinationClick: (String) -> Unit
+) {
+    val bottomBarColor = MaterialTheme.colorScheme.surfaceContainerLow
+    val bottomBarContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    Column {
+        BannerAd()
+        NavigationBar(
+            containerColor = bottomBarColor,
+            contentColor = bottomBarContentColor,
+            tonalElevation = 0.dp
+        ) {
+            destinations.forEach { destination ->
+                val selected = currentRoute == destination.route
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector = destination.icon,
+                            contentDescription = destination.label
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = destination.label,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    selected = selected,
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = bottomBarContentColor,
+                        unselectedTextColor = bottomBarContentColor
+                    ),
+                    onClick = { onDestinationClick(destination.route) }
                 )
             }
         }

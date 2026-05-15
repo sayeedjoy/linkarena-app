@@ -255,41 +255,46 @@ private fun SettingsHeader(
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(214.dp)
             .background(colorScheme.surfaceContainerLow)
+            .padding(horizontal = 20.dp, vertical = 14.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(14.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(18.dp))
             ProfileAvatar(photoUrl = photoUrl)
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text = displayName,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.2).sp
-                ),
-                color = colorScheme.onSurface
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = displayEmail,
-                style = MaterialTheme.typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant
-            )
+            Spacer(Modifier.size(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = displayName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.2).sp
+                    ),
+                    color = colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = displayEmail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
         }
+        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -404,10 +409,10 @@ private fun ProfileAvatar(photoUrl: String?) {
     Box(contentAlignment = Alignment.BottomEnd) {
         Box(
             modifier = Modifier
-                .size(72.dp)
+                .size(52.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.25f))
-                .padding(3.dp)
+                .padding(2.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
@@ -427,15 +432,14 @@ private fun ProfileAvatar(photoUrl: String?) {
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
-        // Small edit affordance over the avatar.
         Box(
             modifier = Modifier
-                .offset(x = (-4).dp, y = (-4).dp)
-                .size(22.dp)
+                .offset(x = (-2).dp, y = (-2).dp)
+                .size(18.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
                 .padding(2.dp)
@@ -447,7 +451,7 @@ private fun ProfileAvatar(photoUrl: String?) {
                 imageVector = Icons.Filled.Edit,
                 contentDescription = "Edit profile",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(10.dp)
             )
         }
     }
