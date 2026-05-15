@@ -364,8 +364,8 @@ private fun PlanCard(plan: PlanItemDto, isPremium: Boolean, primaryColor: Color)
                 if (plan.groupColoringAllowed) add("Color-coded group organization")
                 add("Ad-free experience")
                 add("Priority sync & access")
-                if (plan.apiQuotaPerDay != null) add("${plan.apiQuotaPerDay} API calls / day")
-                else add("Unlimited API calls")
+                if (plan.bookmarkQuotaPerDay != null) add("${plan.bookmarkQuotaPerDay} bookmarks / day")
+                else add("Unlimited bookmarks")
             }
 
             includedFeatures.forEach { featureText ->
@@ -530,9 +530,6 @@ private fun buildFeatureList(plan: PlanItemDto?): List<Feature> = buildList {
             description = "Real-time sync across all your devices with higher rate limits"
         )
     )
-    if (plan?.apiQuotaPerDay == null) {
-        // no-op: unlimited is implied by the plan card
-    }
 }
 
 private fun openPlayStorePurchase(context: android.content.Context, productId: String) {

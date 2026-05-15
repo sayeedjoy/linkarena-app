@@ -15,6 +15,8 @@ data class PlanItemDto(
     val googlePlayProductId: String = "",
     val aiGroupingAllowed: Boolean = false,
     val groupColoringAllowed: Boolean = false,
-    val apiQuotaPerDay: Int? = null,
+    val browserBulkImportAllowed: Boolean = false,
+    val browserRealtimeSyncAllowed: Boolean = false,
+    val bookmarkQuotaPerDay: Int? = null,
     val sortOrder: Int = 0
 )
