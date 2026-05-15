@@ -50,7 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -89,9 +88,6 @@ fun SettingsScreen(
 
     val displayEmail = uiState.userEmail?.takeIf { it.isNotBlank() } ?: "Signed in"
     val displayName = uiState.userName?.takeIf { it.isNotBlank() } ?: "LinkArena User"
-
-    val headerColor = MaterialTheme.colorScheme.primary
-    val onHeaderColor = MaterialTheme.colorScheme.onPrimary
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -140,9 +136,7 @@ fun SettingsScreen(
             SettingsHeader(
                 displayName = displayName,
                 displayEmail = displayEmail,
-                photoUrl = uiState.userPhotoUrl,
-                headerColor = headerColor,
-                onHeaderColor = onHeaderColor
+                photoUrl = uiState.userPhotoUrl
             )
         }
 
@@ -257,23 +251,15 @@ fun SettingsScreen(
 private fun SettingsHeader(
     displayName: String,
     displayEmail: String,
-    photoUrl: String?,
-    headerColor: Color,
-    onHeaderColor: Color
+    photoUrl: String?
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(238.dp)
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        headerColor,
-                        headerColor.copy(alpha = 0.92f),
-                        MaterialTheme.colorScheme.primaryContainer
-                    )
-                )
-            )
+            .height(214.dp)
+            .background(colorScheme.surfaceContainerLow)
     ) {
         Column(
             modifier = Modifier
@@ -284,7 +270,7 @@ private fun SettingsHeader(
             Text(
                 text = "Settings",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = onHeaderColor.copy(alpha = 0.82f)
+                color = colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(18.dp))
             ProfileAvatar(photoUrl = photoUrl)
@@ -295,13 +281,13 @@ private fun SettingsHeader(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.2).sp
                 ),
-                color = onHeaderColor
+                color = colorScheme.onSurface
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = displayEmail,
                 style = MaterialTheme.typography.bodyMedium,
-                color = onHeaderColor.copy(alpha = 0.82f)
+                color = colorScheme.onSurfaceVariant
             )
         }
     }
@@ -346,22 +332,20 @@ private fun PremiumUpgradeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val tertiaryColor = MaterialTheme.colorScheme.tertiary
-    val gradient = Brush.horizontalGradient(listOf(primaryColor, tertiaryColor))
+    val colorScheme = MaterialTheme.colorScheme
 
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        color = Color.Transparent,
+        color = colorScheme.primaryContainer,
+        contentColor = colorScheme.onPrimaryContainer,
         tonalElevation = 0.dp,
-        shadowElevation = 8.dp,
+        shadowElevation = 3.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(gradient)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Row(
@@ -372,13 +356,13 @@ private fun PremiumUpgradeCard(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.22f)),
+                        .background(colorScheme.onPrimaryContainer.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (isPremium) Icons.Filled.CheckCircle else Icons.Filled.Stars,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -390,23 +374,24 @@ private fun PremiumUpgradeCard(
                     Text(
                         text = if (isPremium) "You're on Pro" else "Upgrade to Pro",
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = if (isPremium) "All features unlocked" else "AI grouping, colors & no ads",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.85f)
+                        color = colorScheme.onPrimaryContainer
                     )
                 }
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = Color.White.copy(alpha = 0.22f)
+                    color = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary
                 ) {
                     Text(
                         text = if (isPremium) "Manage" else "View",
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = colorScheme.onPrimary
                     )
                 }
             }
@@ -527,14 +512,14 @@ private fun SettingsFooter(versionName: String) {
         Text(
             text = "Link Arena v$versionName",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Made with ",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.64f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = "<3",
@@ -544,7 +529,7 @@ private fun SettingsFooter(versionName: String) {
             Text(
                 text = " for power users",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.64f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

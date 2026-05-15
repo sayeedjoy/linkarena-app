@@ -3,6 +3,7 @@ package com.sayeedjoy.linkarena.ui.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
@@ -89,6 +90,8 @@ fun MainNavGraph(
     }
 
     Scaffold(
+        containerColor = if (showBottomBar) tabBackgroundColor else defaultBackground,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 Column {
